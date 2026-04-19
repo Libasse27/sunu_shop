@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr" prefix="og: https://ogp.me/ns#">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ═══════════════════════════════════════════
+         FAVICON & APP ICONS
+         Seul logo.svg est présent dans /public.
+         Les PNGs sont générés par VitePWA au build.
+    ═══════════════════════════════════════════ -->
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#009A44" />
+    <meta name="msapplication-TileColor" content="#009A44" />
+    <meta name="application-name" content="Sunu Shop" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Sunu Shop" />
+
+    <!-- ═══════════════════════════════════════════
+         SEO — TITLE & META
+    ═══════════════════════════════════════════ -->
+    <title>Sunu Shop — Informatique, Électronique &amp; Services Tech en Afrique de l'Ouest</title>
+    <meta name="description" content="Sunu Shop : achetez laptops, smartphones, TV, électroménager et accessoires tech. Réparation informatique, installation réseau et caméra à Dakar. Paiement Wave &amp; Orange Money. Livraison au Sénégal, Mali, Guinée." />
+    <meta name="keywords" content="informatique Dakar, smartphones Sénégal, laptop Afrique, électronique Dakar, réparation ordinateur Dakar, Orange Money, Wave, Sunu Shop, boutique tech Sénégal, TV LED Dakar, accessoires téléphone, installation réseau, caméra surveillance" />
+    <meta name="author" content="Sunu Shop" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    <link rel="canonical" href="https://www.sunushop.sn/" />
+
+    <!-- Geo targeting — West Africa -->
+    <meta name="geo.region" content="SN" />
+    <meta name="geo.placename" content="Dakar, Sénégal" />
+    <meta name="geo.position" content="14.6928;-17.4467" />
+    <meta name="ICBM" content="14.6928, -17.4467" />
+    <meta name="language" content="fr" />
+    <meta name="content-language" content="fr-SN" />
+
+    <!-- ═══════════════════════════════════════════
+         OPEN GRAPH — FACEBOOK / WHATSAPP / LINKEDIN
+    ═══════════════════════════════════════════ -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Sunu Shop" />
+    <meta property="og:title" content="Sunu Shop — Boutique Tech #1 en Afrique de l'Ouest" />
+    <meta property="og:description" content="Laptops, smartphones, TV, électroménager et services de réparation tech. Paiement Wave &amp; Orange Money. Livraison rapide au Sénégal, Mali et Guinée." />
+    <meta property="og:url" content="https://www.sunushop.sn/" />
+    <meta property="og:image" content="https://www.sunushop.sn/og-image.jpg" />
+    <meta property="og:image:secure_url" content="https://www.sunushop.sn/og-image.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Sunu Shop — Boutique en ligne de matériel tech en Afrique" />
+    <meta property="og:locale" content="fr_SN" />
+    <meta property="og:locale:alternate" content="fr_FR" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    <!-- ═══════════════════════════════════════════
+         TWITTER / X CARD
+    ═══════════════════════════════════════════ -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@sunushop" />
+    <meta name="twitter:creator" content="@sunushop" />
+    <meta name="twitter:title" content="Sunu Shop — Boutique Tech #1 en Afrique de l'Ouest" />
+    <meta name="twitter:description" content="Laptops, smartphones, TV, électroménager et services de réparation tech. Paiement Wave &amp; Orange Money. Livraison rapide au Sénégal, Mali et Guinée." />
+    <meta name="twitter:image" content="https://www.sunushop.sn/og-image.jpg" />
+    <meta name="twitter:image:alt" content="Sunu Shop — Boutique tech en Afrique de l'Ouest" />
+
+    <!-- ═══════════════════════════════════════════
+         STRUCTURED DATA — JSON-LD
+    ═══════════════════════════════════════════ -->
+
+    <!-- Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Sunu Shop",
+      "url": "https://www.sunushop.sn",
+      "logo": "https://www.sunushop.sn/logo.svg",
+      "description": "Boutique en ligne de matériel informatique, électronique et services tech en Afrique de l'Ouest",
+      "foundingDate": "2024",
+      "areaServed": ["SN", "ML", "GN"],
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Plateau, Centre-ville",
+        "addressLocality": "Dakar",
+        "addressRegion": "Dakar",
+        "addressCountry": "SN"
+      },
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "telephone": "+221773828522",
+          "contactType": "customer service",
+          "availableLanguage": ["French"],
+          "contactOption": "TollFree"
+        }
+      ],
+      "sameAs": [
+        "https://www.facebook.com/sunushop",
+        "https://www.instagram.com/sunushop",
+        "https://twitter.com/sunushop",
+        "https://wa.me/221773828522"
+      ],
+      "currenciesAccepted": "XOF",
+      "paymentAccepted": ["Wave", "Orange Money", "Carte bancaire", "Cash"],
+      "priceRange": "$$"
+    }
+    </script>
+
+    <!-- WebSite + SearchAction (Sitelinks Search Box) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Sunu Shop",
+      "url": "https://www.sunushop.sn",
+      "description": "Boutique tech en ligne — Sénégal, Mali, Guinée",
+      "inLanguage": "fr-SN",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.sunushop.sn/boutique?search={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- Store / LocalBusiness -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "Sunu Shop",
+      "url": "https://www.sunushop.sn",
+      "image": "https://www.sunushop.sn/og-image.jpg",
+      "description": "Boutique en ligne spécialisée en informatique, smartphones, TV, électroménager et services de réparation tech",
+      "telephone": "+221773828522",
+      "email": "contact@sunushop.sn",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Plateau, Centre-ville",
+        "addressLocality": "Dakar",
+        "addressRegion": "Dakar",
+        "addressCountry": "SN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 14.6928,
+        "longitude": -17.4467
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+          "opens": "08:00",
+          "closes": "20:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Saturday",
+          "opens": "09:00",
+          "closes": "18:00"
+        }
+      ],
+      "currenciesAccepted": "XOF",
+      "paymentAccepted": "Wave, Orange Money, Cash",
+      "priceRange": "$$",
+      "hasMap": "https://maps.google.com/?q=Dakar,Senegal"
+    }
+    </script>
+
+    <!-- BreadcrumbList — Homepage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Accueil",
+          "item": "https://www.sunushop.sn/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Boutique",
+          "item": "https://www.sunushop.sn/boutique"
+        }
+      ]
+    }
+    </script>
+
+    <!-- ═══════════════════════════════════════════
+         PERFORMANCE — PRECONNECT & DNS-PREFETCH
+    ═══════════════════════════════════════════ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+    <link rel="dns-prefetch" href="https://api.stripe.com" />
+    <link rel="dns-prefetch" href="https://connect.facebook.net" />
+    <link rel="dns-prefetch" href="https://analytics.tiktok.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <!-- Fonts — non-bloquant (print → all au chargement) -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap"
+      />
+    </noscript>
+
+    <!-- ═══════════════════════════════════════════
+         MARKETING DIGITAL — PIXEL & ANALYTICS
+         Configurer les IDs via variables d'env :
+           VITE_GTM_ID=GTM-XXXXXXX
+           VITE_FB_PIXEL_ID=XXXXXXXXXXXXXXX
+           VITE_TIKTOK_PIXEL_ID=XXXXXXXXXXXXXXXXXX
+         Si la variable est vide, le script ne s'initialise pas.
+    ═══════════════════════════════════════════ -->
+
+    <!-- Google Tag Manager -->
+    <script>
+      (function() {
+        var gtmId = '%VITE_GTM_ID%';
+        if (!gtmId) return;
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer',gtmId);
+      })();
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Facebook Pixel -->
+    <script>
+      (function() {
+        var fbPixelId = '%VITE_FB_PIXEL_ID%';
+        if (!fbPixelId) return;
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+        n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+        document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', fbPixelId);
+        fbq('track', 'PageView');
+      })();
+    </script>
+    <!-- End Facebook Pixel -->
+
+    <!-- TikTok Pixel -->
+    <script>
+      (function() {
+        var ttPixelId = '%VITE_TIKTOK_PIXEL_ID%';
+        if (!ttPixelId) return;
+        !function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];
+        ttq.methods=["page","track","identify","instances","debug","on","off","once","ready",
+        "alias","group","enableCookie","disableCookie"];
+        ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
+        for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
+        ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)
+        ttq.setAndDefer(e,ttq.methods[n]);return e};
+        ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";
+        ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=i;ttq._t=ttq._t||{};ttq._t[e]=+new Date;
+        ttq._o=ttq._o||{};ttq._o[e]=n||{};var o=document.createElement("script");
+        o.type="text/javascript";o.async=!0;o.src=i+"?sdkid="+e+"&lib="+t;
+        var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+        ttq.load(ttPixelId);ttq.page();}(window,document,'ttq');
+      })();
+    </script>
+    <!-- End TikTok Pixel -->
+
+  </head>
+  <body>
+
+    <!-- Google Tag Manager (noscript) -->
+    <script>
+      document.write(
+        '%VITE_GTM_ID%'
+          ? '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=%VITE_GTM_ID%" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>'
+          : ''
+      );
+    </script>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <!-- Facebook Pixel (noscript fallback) -->
+    <script>
+      if ('%VITE_FB_PIXEL_ID%') {
+        document.write(
+          '<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=%VITE_FB_PIXEL_ID%&ev=PageView&noscript=1" /></noscript>'
+        );
+      }
+    </script>
+    <!-- End Facebook Pixel (noscript) -->
+
+    <!-- App root -->
+    <div id="root"></div>
+
+    <!-- Fallback si JavaScript est désactivé -->
+    <noscript>
+      <div style="font-family:sans-serif;text-align:center;padding:4rem 1rem;color:#1e293b;">
+        <img src="/logo.svg" alt="Sunu Shop" style="height:3rem;margin-bottom:1.5rem;" />
+        <h1 style="font-size:1.5rem;margin-bottom:0.75rem;">JavaScript est requis</h1>
+        <p style="color:#64748b;max-width:28rem;margin:0 auto;">
+          Sunu Shop nécessite JavaScript pour fonctionner.
+          Veuillez l'activer dans les paramètres de votre navigateur.
+        </p>
+      </div>
+    </noscript>
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "name": "Sunu Shop",
+  "short_name": "Sunu Shop",
+  "description": "Boutique tech en ligne — Sénégal, Mali, Guinée",
+  "id": "/",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#009A44",
+  "orientation": "portrait-primary",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["shopping", "business"],
+  "screenshots": [],
+  "share_target": {
+    "action": "/boutique",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "text": "search"
+    }
+  }
+}

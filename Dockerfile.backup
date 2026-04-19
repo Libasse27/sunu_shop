@@ -1,0 +1,41 @@
+# =============================================================
+# Dockerfile.backup — Sauvegarde automatique MongoDB
+# Basé sur mongo:7 (inclut mongodump/mongorestore nativement)
+# Ajoute : cron + AWS CLI (pour upload Cloudflare R2 / S3)
+# =============================================================
+
+FROM mongo:7
+
+# Installer cron + AWS CLI v2
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        cron \
+        curl \
+        ca-certificates \
+        unzip \
+        gzip \
+    && curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip \
+    && unzip -q /tmp/awscliv2.zip -d /tmp \
+    && /tmp/aws/install \
+    && rm -rf /tmp/awscliv2.zip /tmp/aws \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copier les scripts
+COPY scripts/backup.sh  /usr/local/bin/backup.sh
+COPY scripts/restore.sh /usr/local/bin/restore.sh
+RUN chmod +x /usr/local/bin/backup.sh /usr/local/bin/restore.sh
+
+# Installer le crontab
+COPY scripts/crontab /etc/cron.d/sunushop-backup
+RUN chmod 0644 /etc/cron.d/sunushop-backup \
+    && crontab /etc/cron.d/sunushop-backup
+
+# Créer les répertoires de backup et logs
+RUN mkdir -p /backups/daily /backups/weekly /backups/monthly \
+    && touch /var/log/backup.log
+
+VOLUME ["/backups"]
+
+# Afficher les logs en temps réel
+CMD ["bash", "-c", "cron && tail -f /var/log/backup.log"]

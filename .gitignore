@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+dist/
+build/
+.next/
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+
+# Uploads
+uploads/
+temp/
+
+# TypeScript
+*.tsbuildinfo
+
+# Docker / Production
+.env.production
+monitoring/prometheus/metrics_token
+nginx/ssl/dhparam.pem
+nginx/ssl/*.pem
+nginx/ssl/*.key
+backups/
+
+# Certbot (géré par Docker volumes)
+certbot/

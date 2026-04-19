@@ -1,0 +1,3 @@
+#!/bin/sh
+# Lint et formatage automatique des fichiers staged
+npx lint-staged

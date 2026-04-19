@@ -1,0 +1,36 @@
+{
+  "name": "sunushop",
+  "version": "1.0.0",
+  "description": "Sunu Shop — Boutique e-commerce informatique, électronique, téléphonie et électroménager (Afrique de l'Ouest)",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "npm run build:server && npm run build:client",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "seed": "cd server && npm run seed",
+    "lint": "concurrently \"cd server && npm run lint\" \"cd client && npm run lint\"",
+    "test": "concurrently \"cd server && npm test\" \"cd client && npm test\"",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "server/src/**/*.ts": [
+      "cd server && npx eslint --fix --max-warnings 0",
+      "cd server && npx prettier --write"
+    ],
+    "client/src/**/*.{ts,tsx}": [
+      "cd client && npx eslint --fix --max-warnings 0",
+      "cd client && npx prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "concurrently": "^8.2.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0"
+  }
+}

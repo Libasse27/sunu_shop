@@ -1,0 +1,51 @@
+# =============================================================
+# .dockerignore — Exclure les fichiers inutiles du build Docker
+# =============================================================
+
+# Dépendances (installées dans le container)
+**/node_modules
+**/.npm
+
+# Builds
+**/dist
+**/build
+client/.vite
+
+# Git
+.git
+.gitignore
+**/.gitkeep
+
+# Variables d'environnement (injectées via docker-compose)
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Logs
+**/*.log
+**/logs
+
+# Tests et couverture
+**/coverage
+**/.nyc_output
+**/__tests__
+**/*.test.ts
+**/*.spec.ts
+
+# IDE et OS
+.vscode
+.idea
+**/.DS_Store
+**/Thumbs.db
+
+# Documentation
+*.md
+!PAYMENT_GATEWAY_DOCUMENTATION.md
+
+# Clés SSL (montées via volumes)
+nginx/ssl/
+
+# Fichiers temporaires
+**/*.tmp
+**/.cache

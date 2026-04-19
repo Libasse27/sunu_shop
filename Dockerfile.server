@@ -1,0 +1,53 @@
+# =============================================================
+# Dockerfile.server — API Node.js (production)
+# Contexte Docker : racine du projet (.)
+# Code source    : server/src/
+# =============================================================
+
+# ── Stage 1: Builder ─────────────────────────────────────────
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copie des manifestes depuis server/ (contexte = racine du projet)
+COPY server/package*.json ./
+RUN npm ci
+
+# Copie de la config TypeScript et des sources
+COPY server/tsconfig.json ./
+COPY server/src            ./src
+
+# Compilation TypeScript → dist/
+RUN npm run build
+
+# ── Stage 2: Production Runner ────────────────────────────────
+FROM node:20-alpine AS runner
+
+# dumb-init : gestion correcte des signaux PID 1 dans Docker
+RUN apk add --no-cache dumb-init
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Utilisateur non-root pour la sécurité
+RUN addgroup -S techafrique && adduser -S techafrique -G techafrique
+
+# Installer uniquement les dépendances de production
+COPY server/package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Copier uniquement le build compilé (pas les sources TypeScript)
+COPY --from=builder /app/dist ./dist
+
+# Propriété du dossier à l'utilisateur non-root
+RUN chown -R techafrique:techafrique /app
+USER techafrique
+
+EXPOSE 5000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD wget -qO- http://localhost:5000/api/health || exit 1
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/server.js"]

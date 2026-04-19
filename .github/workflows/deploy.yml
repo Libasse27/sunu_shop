@@ -1,0 +1,44 @@
+name: Deploy — Production TechAfrique
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environnement cible"
+        required: true
+        default: "production"
+        type: choice
+        options: [production, staging]
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'production' }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build server Docker image
+        run: |
+          docker build \
+            -t techafrique-server:${{ github.sha }} \
+            -t techafrique-server:latest \
+            -f Dockerfile.server \
+            --target runner \
+            .
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /app/techafrique
+            git pull origin main
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker system prune -f
+            echo "Deploy $(git rev-parse --short HEAD) termine"

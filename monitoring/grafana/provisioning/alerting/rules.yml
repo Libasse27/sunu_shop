@@ -1,0 +1,252 @@
+# =============================================================
+# rules.yml — Règles d'alerte Grafana (SunuShop Production)
+#
+# Alertes configurées :
+#   - CPU > 85%           → critique serveur
+#   - RAM > 90%           → risque OOM
+#   - API error rate > 5% → incidents applicatifs
+#   - MongoDB latency > 200ms → ralentissement DB
+#   - Queue backlog > 100 → accumulation de jobs
+#
+# Délai avant déclenchement : 5 minutes (évite faux positifs)
+# =============================================================
+
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: sunushop-production
+    folder: SunuShop
+    interval: 1m
+    rules:
+
+      # ----------------------------------------------------------
+      # 1. CPU > 85% pendant 5 minutes
+      # ----------------------------------------------------------
+      - uid: ta-alert-cpu-critical
+        title: "CPU Critique (> 85%)"
+        condition: C
+        for: 5m
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              expr: '100 - (avg(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)'
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: "-100"
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              type: reduce
+              refId: B
+              datasource: { uid: "-100", type: "__expr__" }
+              reducer: last
+              expression: A
+          - refId: C
+            datasourceUid: "-100"
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              type: threshold
+              refId: C
+              datasource: { uid: "-100", type: "__expr__" }
+              conditions:
+                - evaluator: { params: [85], type: gt }
+                  query: { params: [B] }
+                  reducer: { params: [], type: last }
+                  type: query
+        annotations:
+          summary: "CPU élevé sur {{ $labels.instance }}"
+          description: "Utilisation CPU : {{ $values.B | printf \"%.1f\" }}% (seuil : 85%)"
+          runbook_url: "https://grafana.com/docs/"
+        labels:
+          severity: critical
+          team: ops
+        noDataState: NoData
+        execErrState: Error
+
+      # ----------------------------------------------------------
+      # 2. RAM > 90% pendant 5 minutes
+      # ----------------------------------------------------------
+      - uid: ta-alert-ram-critical
+        title: "RAM Critique (> 90%)"
+        condition: C
+        for: 5m
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              expr: '(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100'
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: "-100"
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              type: reduce
+              refId: B
+              datasource: { uid: "-100", type: "__expr__" }
+              reducer: last
+              expression: A
+          - refId: C
+            datasourceUid: "-100"
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              type: threshold
+              refId: C
+              datasource: { uid: "-100", type: "__expr__" }
+              conditions:
+                - evaluator: { params: [90], type: gt }
+                  query: { params: [B] }
+                  reducer: { params: [], type: last }
+                  type: query
+        annotations:
+          summary: "Mémoire RAM critique sur {{ $labels.instance }}"
+          description: "Utilisation RAM : {{ $values.B | printf \"%.1f\" }}% (seuil : 90%)"
+        labels:
+          severity: critical
+          team: ops
+        noDataState: NoData
+        execErrState: Error
+
+      # ----------------------------------------------------------
+      # 3. Taux d'erreur API > 5% pendant 5 minutes
+      # ----------------------------------------------------------
+      - uid: ta-alert-api-errors
+        title: "Taux d'erreur API > 5%"
+        condition: C
+        for: 5m
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              expr: 'sum(rate(ta_http_requests_total{status_code=~"5.."}[5m])) / sum(rate(ta_http_requests_total[5m])) * 100'
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: "-100"
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              type: reduce
+              refId: B
+              datasource: { uid: "-100", type: "__expr__" }
+              reducer: last
+              expression: A
+          - refId: C
+            datasourceUid: "-100"
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              type: threshold
+              refId: C
+              datasource: { uid: "-100", type: "__expr__" }
+              conditions:
+                - evaluator: { params: [5], type: gt }
+                  query: { params: [B] }
+                  reducer: { params: [], type: last }
+                  type: query
+        annotations:
+          summary: "Taux d'erreurs API élevé"
+          description: "Taux d'erreurs 5xx : {{ $values.B | printf \"%.1f\" }}% (seuil : 5%)"
+        labels:
+          severity: critical
+          team: dev
+        noDataState: OK
+        execErrState: Error
+
+      # ----------------------------------------------------------
+      # 4. Latence MongoDB > 200ms pendant 3 minutes
+      # ----------------------------------------------------------
+      - uid: ta-alert-mongo-latency
+        title: "Latence MongoDB > 200ms"
+        condition: C
+        for: 3m
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              expr: 'rate(mongodb_mongod_op_latencies_latency_total{type="reads"}[5m]) / rate(mongodb_mongod_op_latencies_ops_total{type="reads"}[5m]) / 1000'
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: "-100"
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              type: reduce
+              refId: B
+              datasource: { uid: "-100", type: "__expr__" }
+              reducer: last
+              expression: A
+          - refId: C
+            datasourceUid: "-100"
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              type: threshold
+              refId: C
+              datasource: { uid: "-100", type: "__expr__" }
+              conditions:
+                - evaluator: { params: [200], type: gt }
+                  query: { params: [B] }
+                  reducer: { params: [], type: last }
+                  type: query
+        annotations:
+          summary: "Latence MongoDB élevée"
+          description: "Latence lecture MongoDB : {{ $values.B | printf \"%.0f\" }}ms (seuil : 200ms)"
+        labels:
+          severity: warning
+          team: ops
+        noDataState: NoData
+        execErrState: Error
+
+      # ----------------------------------------------------------
+      # 5. Queue backlog BullMQ > 100 jobs en attente
+      # ----------------------------------------------------------
+      - uid: ta-alert-queue-backlog
+        title: "Queue Backlog > 100 jobs"
+        condition: C
+        for: 5m
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              expr: 'sum(ta_queue_depth)'
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: "-100"
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              type: reduce
+              refId: B
+              datasource: { uid: "-100", type: "__expr__" }
+              reducer: last
+              expression: A
+          - refId: C
+            datasourceUid: "-100"
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              type: threshold
+              refId: C
+              datasource: { uid: "-100", type: "__expr__" }
+              conditions:
+                - evaluator: { params: [100], type: gt }
+                  query: { params: [B] }
+                  reducer: { params: [], type: last }
+                  type: query
+        annotations:
+          summary: "Backlog de queue élevé"
+          description: "Jobs en attente dans les queues BullMQ : {{ $values.B }} (seuil : 100)"
+        labels:
+          severity: warning
+          team: dev
+        noDataState: OK
+        execErrState: Error

@@ -1,0 +1,272 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════
+   Sunu Shop — Design System · Couleurs Drapeau Sénégal
+   Vert  #009A44 (primaire · CTA · succès)
+   Or    #FCD116 (accent  · prix · promotions)
+   Rouge #E31B23 (danger  · soldes · alertes)
+   Blanc #FFFFFF (fond principal · texte sur couleurs)
+   Sombre #1A1A2E (texte principal · header)
+═══════════════════════════════════════════════════════════ */
+
+/* ── Global keyframes ── */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+  50%       { transform: translateY(-6px); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+}
+
+@keyframes pulse-wa {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    @apply font-body text-gray-900 bg-gray-50;
+    margin: 0;
+    padding: 0;
+  }
+  h1, h2, h3, h4, h5, h6 { @apply font-heading; }
+  ::selection { @apply bg-primary text-white; }
+}
+
+@layer components {
+  /* ── Container ── */
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-gradient-to-br from-primary to-primary-dark
+           text-white font-semibold px-5 py-2.5 rounded-lg
+           transition-all duration-200 hover:-translate-y-0.5
+           hover:shadow-lg hover:shadow-primary/30
+           active:scale-95
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-gradient-to-br from-secondary to-secondary-dark
+           text-white font-semibold px-5 py-2.5 rounded-lg
+           transition-all duration-200 hover:-translate-y-0.5
+           active:scale-95;
+  }
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2
+           bg-gradient-to-br from-accent to-accent-light
+           text-ta-dark font-bold px-5 py-2.5 rounded-lg
+           transition-all duration-200 hover:-translate-y-0.5
+           hover:shadow-lg hover:shadow-accent/40
+           active:scale-95;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2
+           border-2 border-primary text-primary font-semibold
+           px-5 py-2.5 rounded-lg transition-all duration-200
+           hover:bg-primary hover:text-white active:scale-95;
+  }
+  .btn-outline-red {
+    @apply inline-flex items-center justify-center gap-2
+           border-2 border-secondary text-secondary font-semibold
+           px-5 py-2.5 rounded-lg transition-all duration-200
+           hover:bg-secondary hover:text-white active:scale-95;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           border border-gray-200 text-gray-600 font-medium
+           px-5 py-2.5 rounded-lg transition-all duration-200
+           hover:bg-gray-100 active:scale-95;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2
+           bg-red-600 text-white font-semibold
+           px-5 py-2.5 rounded-lg transition-all duration-200
+           hover:bg-red-700 active:scale-95;
+  }
+  .btn-icon {
+    @apply w-9 h-9 inline-flex items-center justify-center rounded-full transition-colors;
+  }
+
+  /* ── Links ── */
+  .link-primary {
+    @apply text-primary hover:text-primary-dark hover:underline transition-colors;
+  }
+  .link-accent {
+    @apply text-accent-dark hover:text-accent hover:underline transition-colors;
+  }
+
+  /* ── Card ── */
+  .card {
+    @apply bg-white rounded-card shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+
+  /* ── Product card ── */
+  /* Note: add `group` directly in HTML — cannot use @apply with group */
+  .product-card {
+    @apply block rounded-xl border overflow-hidden bg-white;
+    text-decoration: none;
+    transition: box-shadow 0.2s ease;
+  }
+  .product-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Quick actions — hidden by default, slide up on parent hover */
+  .product-card .product-actions {
+    @apply absolute bottom-0 left-0 right-0 p-3;
+    opacity: 0;
+    transform: translateY(100%);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .product-card:hover .product-actions {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── Input ── */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg border border-gray-300
+           text-gray-900 placeholder-gray-400
+           focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15
+           transition-colors duration-200 bg-white
+           disabled:bg-gray-50 disabled:cursor-not-allowed;
+    /* Prevent Chrome autofill yellow background */
+    -webkit-box-shadow: 0 0 0 1000px white inset;
+  }
+  .input-field:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px white inset;
+    -webkit-text-fill-color: #111827;
+  }
+
+  /* ── Select ── */
+  .select-field {
+    @apply w-full px-4 py-3 rounded-lg border border-gray-300
+           text-gray-900 bg-white
+           focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15
+           transition-colors duration-200
+           disabled:bg-gray-50 disabled:cursor-not-allowed
+           appearance-none cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+  }
+
+  /* ── Badges ── */
+  .badge-sale {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold
+           bg-gradient-to-r from-secondary to-secondary-light text-white;
+  }
+  .badge-new {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold
+           bg-gradient-to-r from-primary to-primary-dark text-white;
+  }
+  .badge-gold {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold
+           bg-gradient-to-r from-accent to-accent-light text-ta-dark;
+  }
+  .badge-warning {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold
+           bg-amber-100 text-amber-700;
+  }
+  .badge-info {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold
+           bg-primary-100 text-primary-700;
+  }
+
+  /* ── Skeleton loading ── */
+  .skeleton {
+    @apply rounded;
+    background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* ── Pan-African strip ── */
+  .pan-strip {
+    @apply flex h-1;
+  }
+  .pan-strip > :nth-child(1) { @apply flex-1 bg-primary; }
+  .pan-strip > :nth-child(2) { @apply flex-1 bg-accent; }
+  .pan-strip > :nth-child(3) { @apply flex-1 bg-secondary; }
+
+  /* Horizontal variant — 4px height */
+  .pan-strip-h {
+    @apply flex;
+    height: 4px;
+  }
+  .pan-strip-h > :nth-child(1) { @apply flex-1 bg-primary; }
+  .pan-strip-h > :nth-child(2) { @apply flex-1 bg-accent; }
+  .pan-strip-h > :nth-child(3) { @apply flex-1 bg-secondary; }
+}
+
+@layer utilities {
+  /* ── Gradients ── */
+  .text-gradient-green {
+    @apply bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent;
+  }
+  .text-gradient-pan {
+    background: linear-gradient(135deg, #009A44, #FCD116, #E31B23);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Price typography ── */
+  .text-price {
+    @apply font-price font-bold;
+  }
+
+  /* ── Focus ring utility ── */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1;
+  }
+
+  /* ── Hover lift utility ── */
+  .hover-lift {
+    @apply transition-transform duration-150 hover:-translate-y-1;
+  }
+
+  /* ── WhatsApp pulse animation ── */
+  .animate-pulse-wa {
+    animation: pulse-wa 2s ease-in-out infinite;
+  }
+
+  /* ── Scrollbar ── */
+  .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* Fine scrollbar — for CartDrawer and sidebars */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+  }
+
+  /* ── Leaflet ── */
+  .leaflet-pane   { z-index: 400 !important; }
+  .leaflet-top, .leaflet-bottom { z-index: 999 !important; }
+}

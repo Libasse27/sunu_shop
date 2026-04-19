@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#009A44"/>
+      <stop offset="50%" stop-color="#007A35"/>
+      <stop offset="100%" stop-color="#CE1126"/>
+    </linearGradient>
+    <linearGradient id="shineGrad" x1="0" y1="0" x2="140" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="white" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="goldAccent" x1="0" y1="0" x2="200" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FCD116"/>
+      <stop offset="100%" stop-color="#D4A800"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="200" height="200" rx="44" fill="url(#bgGrad)"/>
+  <rect width="200" height="200" rx="44" fill="url(#shineGrad)"/>
+
+  <!-- Gold accent bar at bottom -->
+  <rect x="0" y="182" width="200" height="18" rx="0" fill="url(#goldAccent)" opacity="0.85"/>
+  <rect x="0" y="182" width="200" height="18" rx="44" fill="url(#goldAccent)" opacity="0.85"/>
+
+  <!-- Circuit-board corner pads -->
+  <circle cx="26" cy="26" r="5.5" fill="rgba(255,255,255,0.18)"/>
+  <circle cx="26" cy="26" r="2.8" fill="rgba(255,255,255,0.32)"/>
+  <circle cx="174" cy="26" r="5.5" fill="rgba(255,255,255,0.18)"/>
+  <circle cx="174" cy="26" r="2.8" fill="rgba(255,255,255,0.32)"/>
+  <circle cx="26" cy="174" r="5.5" fill="rgba(255,255,255,0.18)"/>
+  <circle cx="26" cy="174" r="2.8" fill="rgba(255,255,255,0.32)"/>
+  <circle cx="174" cy="174" r="5.5" fill="rgba(255,255,255,0.18)"/>
+  <circle cx="174" cy="174" r="2.8" fill="rgba(255,255,255,0.32)"/>
+
+  <!-- Trace lines from corners (circuit look) -->
+  <line x1="32" y1="26" x2="58" y2="26" stroke="rgba(255,255,255,0.13)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="26" y1="32" x2="26" y2="58" stroke="rgba(255,255,255,0.13)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="168" y1="26" x2="142" y2="26" stroke="rgba(255,255,255,0.13)" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- ===== T (left, x 14–87) ===== -->
+  <!-- Horizontal bar -->
+  <rect x="14" y="64" width="74" height="20" rx="10" fill="white"/>
+  <!-- Vertical stem, centered at x=51 -->
+  <rect x="41" y="64" width="20" height="88" rx="10" fill="white"/>
+
+  <!-- ===== A (right, x 105–186) ===== -->
+  <!-- Left leg -->
+  <path d="M105 152 L145 48 L158 48 L121 152 Z" fill="white"/>
+  <!-- Right leg -->
+  <path d="M132 152 L169 48 L182 48 L145 152 Z" fill="white"/>
+  <!-- Background cover for crossbar gap -->
+  <rect x="118" y="112" width="52" height="24" rx="0" fill="url(#bgGrad)"/>
+  <!-- Gold crossbar -->
+  <rect x="112" y="113" width="64" height="18" rx="9" fill="url(#goldAccent)"/>
+</svg>

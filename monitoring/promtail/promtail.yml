@@ -1,0 +1,61 @@
+# =============================================================
+# promtail.yml — Agent de collecte des logs Docker → Loki
+# Lit les logs de tous les containers Docker et les envoie à Loki
+# avec des labels pour filtrer par service
+# =============================================================
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level:        warn
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    tenant_id: sunushop
+
+scrape_configs:
+  # --- Logs des containers Docker ---
+  - job_name: docker
+    docker_sd_configs:
+      - host:             unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name:   label
+            values: ["com.docker.compose.project=sunushop-prod"]
+
+    relabel_configs:
+      # Utiliser le nom du container comme label "container"
+      - source_labels: ['__meta_docker_container_name']
+        regex:         '/(.*)'
+        target_label:  container
+
+      # Utiliser le service docker-compose comme label "service"
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label:  service
+
+      # Ajouter un label "job" = sunushop
+      - target_label: job
+        replacement:  sunushop
+
+      # Extraire l'image du container
+      - source_labels: ['__meta_docker_container_image']
+        target_label:  image
+
+    pipeline_stages:
+      # Parser les logs JSON de Node.js (winston)
+      - json:
+          expressions:
+            level:   level
+            message: message
+            service: service
+      # Extraire le niveau de log comme label
+      - labels:
+          level:
+          service:
+      # Supprimer les lignes de santé check (bruit)
+      - drop:
+          expression: ".*GET /api/health.*"
+          drop_counter_reason: health_check_noise

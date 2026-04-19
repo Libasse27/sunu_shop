@@ -1,0 +1,29 @@
+# =============================================================
+# notification-policies.yml — Politique de routage des alertes
+# =============================================================
+
+apiVersion: 1
+
+policies:
+  - orgId: 1
+    receiver: SunuShop Alerts
+    group_by: ['alertname', 'severity']
+    group_wait: 30s        # délai avant envoi du 1er groupe
+    group_interval: 5m     # délai entre groupes successifs
+    repeat_interval: 4h    # répétition si l'alerte persiste
+    routes:
+      # Alertes critiques : notifier toutes les heures
+      - receiver: SunuShop Alerts
+        matchers:
+          - name: severity
+            value: critical
+            isEqual: true
+        repeat_interval: 1h
+
+      # Alertes warning : notifier toutes les 4h
+      - receiver: SunuShop Alerts
+        matchers:
+          - name: severity
+            value: warning
+            isEqual: true
+        repeat_interval: 4h

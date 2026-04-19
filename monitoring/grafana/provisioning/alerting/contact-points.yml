@@ -1,0 +1,56 @@
+# =============================================================
+# contact-points.yml — Points de contact Grafana
+#
+# Canaux de notification :
+#   - Email     : admin@sunushop.sn (via SMTP configuré)
+#   - Webhook   : Slack / Discord / n8n / Make (optionnel)
+#   - Telegram  : bot Telegram (optionnel)
+#
+# Variables d'env requises dans docker-compose.prod.yml :
+#   ALERT_EMAIL, ALERT_WEBHOOK_URL, ALERT_TELEGRAM_*
+# =============================================================
+
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: SunuShop Alerts
+    receivers:
+
+      # Email — nécessite GF_SMTP_* configuré dans docker-compose
+      - uid: ta-email-admin
+        type: email
+        disableResolveMessage: false
+        settings:
+          addresses: ${ALERT_EMAIL}
+          subject: "[SunuShop] {{ .CommonLabels.alertname }} — {{ .Status | toUpper }}"
+          message: |
+            {{ range .Alerts }}
+            **{{ .Annotations.summary }}**
+            {{ .Annotations.description }}
+            Sévérité : {{ .Labels.severity }}
+            Heure : {{ .StartsAt | date "02/01/2006 15:04:05" }}
+            {{ end }}
+
+      # Webhook — Slack / Discord / n8n / Make
+      - uid: ta-webhook
+        type: webhook
+        disableResolveMessage: false
+        settings:
+          url: ${ALERT_WEBHOOK_URL}
+          httpMethod: POST
+
+      # Telegram (optionnel)
+      - uid: ta-telegram
+        type: telegram
+        disableResolveMessage: false
+        settings:
+          bottoken: ${ALERT_TELEGRAM_BOT_TOKEN}
+          chatid: ${ALERT_TELEGRAM_CHAT_ID}
+          message: |
+            🚨 *SunuShop Alert*
+            {{ range .Alerts }}
+            *{{ .Annotations.summary }}*
+            {{ .Annotations.description }}
+            Sévérité: `{{ .Labels.severity }}`
+            {{ end }}
