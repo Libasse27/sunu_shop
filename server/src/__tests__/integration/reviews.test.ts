@@ -32,6 +32,7 @@ async function createProduct() {
     name: 'Laptop Test',
     slug: 'laptop-test',
     sku: 'LAP-001',
+    description: 'Laptop performant pour les professionnels.',
     price: 350_000,
     currency: 'XOF',
     category: category._id,
@@ -214,8 +215,8 @@ describe('Reviews API', () => {
     });
 
     it('ne peut pas supprimer l\'avis d\'un autre utilisateur — 403', async () => {
-      const { token: tokenA } = await registerAndLogin({ email: 'user-a@test.com' });
-      const { token: tokenB } = await registerAndLogin({ email: 'user-b@test.com' });
+      const { token: tokenA } = await registerAndLogin({ email: 'user-a@test.com', phone: '+221770000011' });
+      const { token: tokenB } = await registerAndLogin({ email: 'user-b@test.com', phone: '+221770000012' });
       const product = await createProduct();
 
       const { body: reviewBody } = await request(app)

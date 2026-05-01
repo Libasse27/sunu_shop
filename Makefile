@@ -1,5 +1,5 @@
 # =============================================================
-# Makefile — TechAfrique
+# Makefile — SunuShop
 # Usage : make <commande>
 # =============================================================
 
@@ -10,6 +10,7 @@
         cloudflare-ips-update install \
         monitor-open loki-open redis-cli-prod \
         backup-now backup-logs backup-list backup-restore \
+        backup-test \
         db-seed clean health
 
 # Couleurs
@@ -24,7 +25,7 @@ COMPOSE_PROD := docker compose -f docker-compose.prod.yml
 help: ## Afficher toutes les commandes disponibles
 	@echo ""
 	@echo "  $(CYAN)╔══════════════════════════════════════════╗$(NC)"
-	@echo "  $(CYAN)║   TechAfrique — Commandes Make           ║$(NC)"
+	@echo "  $(CYAN)║   SunuShop — Commandes Make           ║$(NC)"
 	@echo "  $(CYAN)╚══════════════════════════════════════════╝$(NC)"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -53,9 +54,9 @@ dev-logs: ## Voir les logs de développement
 mongo-keyfile: ## Générer le keyfile MongoDB (replica set auth) — à exécuter une fois avant prod
 	openssl rand -base64 756 > /tmp/mongo-keyfile
 	chmod 400 /tmp/mongo-keyfile
-	docker volume create techafrique-prod_mongo_keyfile 2>/dev/null || true
-	docker run --rm -v techafrique-prod_mongo_keyfile:/data -v /tmp:/src alpine cp /src/mongo-keyfile /data/mongo-keyfile
-	docker run --rm -v techafrique-prod_mongo_keyfile:/data alpine chmod 400 /data/mongo-keyfile
+	docker volume create sunushop-prod_mongo_keyfile 2>/dev/null || true
+	docker run --rm -v sunushop-prod_mongo_keyfile:/data -v /tmp:/src alpine cp /src/mongo-keyfile /data/mongo-keyfile
+	docker run --rm -v sunushop-prod_mongo_keyfile:/data alpine chmod 400 /data/mongo-keyfile
 	@echo "✅ Keyfile MongoDB créé"
 
 prod: ## Démarrer la stack de production
@@ -163,6 +164,10 @@ backup-verify: ## Vérifier l'intégrité du dernier backup
 			gzip -t \"\$$LAST\" && echo '$(GREEN)✓ Fichier intact$(NC)' || echo '$(RED)✗ Fichier corrompu$(NC)'; \
 		 else echo 'Aucun backup trouvé'; fi"
 
+backup-test: ## Lancer les tests d'intégrité du système de backup
+	@echo "$(CYAN)Test du système de backup...$(NC)"
+	$(COMPOSE_PROD) exec backup /usr/local/bin/test-backup.sh
+
 # ==============================================================
 # BASE DE DONNÉES
 # ==============================================================
@@ -187,7 +192,7 @@ monitor-open: ## Ouvrir Grafana (SSH tunnel + navigateur)
 
 loki-open: ## Voir les logs via Loki (depuis Grafana)
 	@echo "Ouvre Grafana → Explore → Loki datasource"
-	@echo "Query : {job=\"techafrique\"} |= \"error\""
+	@echo "Query : {job=\"sunushop\"} |= \"error\""
 
 redis-cli-prod: ## Ouvrir redis-cli en production (via Docker exec)
 	$(COMPOSE_PROD) exec redis redis-cli -a $${REDIS_PASSWORD}
@@ -201,11 +206,11 @@ clean: ## Supprimer les images/volumes Docker non utilisés
 	@echo "$(GREEN)Nettoyage terminé$(NC)"
 
 health: ## Vérifier la santé de l'API
-	@curl -sf https://www.techafrique.sn/api/health | python3 -m json.tool 2>/dev/null \
+	@curl -sf https://www.sunushop.sn/api/health | python3 -m json.tool 2>/dev/null \
 		|| echo "$(YELLOW)API inaccessible ou python3 non installé$(NC)"
 
 logs-access: ## Afficher les 50 dernières requêtes Nginx
-	$(COMPOSE_PROD) exec nginx tail -50 /var/log/nginx/techafrique.access.log
+	$(COMPOSE_PROD) exec nginx tail -50 /var/log/nginx/sunushop.access.log
 
 logs-errors: ## Afficher les erreurs Nginx récentes
-	$(COMPOSE_PROD) exec nginx tail -50 /var/log/nginx/techafrique.error.log
+	$(COMPOSE_PROD) exec nginx tail -50 /var/log/nginx/sunushop.error.log

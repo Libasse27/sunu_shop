@@ -2,5 +2,5 @@
   "watch": ["src"],
   "ext": "ts,json",
   "ignore": ["src/**/*.spec.ts"],
-  "exec": "npx ts-node --files src/server.ts"
+  "exec": "npx ts-node -r tsconfig-paths/register --files src/server.ts"
 }

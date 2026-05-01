@@ -6,14 +6,21 @@ let mongod: MongoMemoryServer;
 // Désactiver les logs pendant les tests
 jest.mock('../config/redis', () => {
   const mockRedis = {
-    get: jest.fn().mockResolvedValue(null),
-    setEx: jest.fn().mockResolvedValue('OK'),
-    set: jest.fn().mockResolvedValue('OK'),
-    del: jest.fn().mockResolvedValue(1),
-    keys: jest.fn().mockResolvedValue([]),
-    connect: jest.fn().mockResolvedValue(undefined),
-    on: jest.fn(),
+    get:        jest.fn().mockResolvedValue(null),
+    set:        jest.fn().mockResolvedValue('OK'),
+    setex:      jest.fn().mockResolvedValue('OK'),
+    setEx:      jest.fn().mockResolvedValue('OK'),
+    del:        jest.fn().mockResolvedValue(1),
+    keys:       jest.fn().mockResolvedValue([]),
+    scan:       jest.fn().mockResolvedValue(['0', []]),
+    // rate-limit-redis attend [hits, resetTimestamp] depuis EVALSHA/EVAL
+    call:        jest.fn().mockResolvedValue([1, Date.now() + 60_000]),
+    sendCommand: jest.fn().mockResolvedValue([1, Date.now() + 60_000]),
+    connect:    jest.fn().mockResolvedValue(undefined),
     disconnect: jest.fn().mockResolvedValue(undefined),
+    on:         jest.fn(),
+    status:     'ready',
+    ttl:        jest.fn().mockResolvedValue(1800),  // 30 min par défaut
   };
   return {
     __esModule: true,
@@ -39,6 +46,16 @@ jest.mock('../config/queue', () => ({
   queueEmail: jest.fn().mockResolvedValue(undefined),
   queueNotification: jest.fn().mockResolvedValue(undefined),
   queueInvoice: jest.fn().mockResolvedValue(undefined),
+}));
+
+// Mock rate limiter — passthrough en tests (évite les dépendances Redis complexes)
+const passthrough = (_req: unknown, _res: unknown, next: () => void) => next();
+jest.mock('../middleware/rateLimiter.middleware', () => ({
+  generalLimiter: passthrough,
+  authLimiter:    passthrough,
+  uploadLimiter:  passthrough,
+  paymentLimiter: passthrough,
+  createLimiter:  () => passthrough,
 }));
 
 // Mock Cloudinary

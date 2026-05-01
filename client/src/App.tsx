@@ -51,6 +51,8 @@ const AdminBannersPage = lazy(() => import('./pages/admin/AdminBannersPage'));
 const AdminAnnouncementsPage = lazy(() => import('./pages/admin/AdminAnnouncementsPage'));
 const AdminPromoBannerPage = lazy(() => import('./pages/admin/AdminPromoBannerPage'));
 const AdminNewsletterPage = lazy(() => import('./pages/admin/AdminNewsletterPage'));
+const AdminPaymentSettingsPage = lazy(() => import('./pages/admin/AdminPaymentSettingsPage'));
+const AdminRevenuePage = lazy(() => import('./pages/admin/AdminRevenuePage'));
 
 function App() {
   const location = useLocation();
@@ -60,16 +62,18 @@ function App() {
   // Initialisé avec la valeur courante pour que le watcher ne se déclenche pas au montage
   const prevUserRef = useRef<typeof user>(user);
 
-  // Montage : restaure le token silencieusement si l'utilisateur est déjà en localStorage
+  // Montage : restaure le token silencieusement si l'utilisateur est déjà en localStorage.
+  // dispatch est stable (Redux garantie), user est lu via ref pour un effet one-shot.
+  const dispatchRef = useRef(dispatch);
+  const userRef = useRef(user);
   useEffect(() => {
-    if (user) {
-      dispatch(restoreSession()).then((result) => {
+    if (userRef.current) {
+      dispatchRef.current(restoreSession()).then((result) => {
         if (result.meta.requestStatus === 'fulfilled') {
-          dispatch(syncWishlist());
+          dispatchRef.current(syncWishlist());
         }
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Connexion ultérieure (user null → non-null) : le token est déjà en mémoire
@@ -115,9 +119,11 @@ function App() {
             <Route path="/payment/wave/success" element={<PaymentSuccessPage />} />
             <Route path="/payment/wave/error" element={<PaymentFailedPage />} />
 
+            {/* Checkout — accessible sans compte (auth wall intégré) */}
+            <Route path="/commande" element={<CheckoutPage />} />
+
             {/* Protected routes */}
             <Route element={<PrivateRoute />}>
-              <Route path="/commande" element={<CheckoutPage />} />
               <Route path="/mon-compte/*" element={<AccountPage />} />
               <Route path="/favoris" element={<WishlistPage />} />
             </Route>
@@ -136,6 +142,8 @@ function App() {
               <Route path="/admin/annonces" element={<AdminAnnouncementsPage />} />
               <Route path="/admin/promo-banner" element={<AdminPromoBannerPage />} />
               <Route path="/admin/newsletter" element={<AdminNewsletterPage />} />
+              <Route path="/admin/paiements" element={<AdminPaymentSettingsPage />} />
+              <Route path="/admin/chiffre-affaires" element={<AdminRevenuePage />} />
             </Route>
 
             <Route path="*" element={<NotFoundPage />} />

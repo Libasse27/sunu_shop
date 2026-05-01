@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Sunu Shop — Admin UI Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   Sunu Shop — Design Tokens (drapeau sénégalais)
+════════════════════════════════════════════════════════════════════ */
+:root {
+  --primary:        #009A44;
+  --primary-light:  #00C057;
+  --primary-dark:   #007A35;
+  --primary-50:     #E6F7EE;
+  --secondary:      #E31B23;
+  --secondary-dark: #B81219;
+  --accent:         #FCD116;
+  --accent-dark:    #CCB000;
+  --ta-dark:        #1A1A2E;
+  --ta-dark-2:      #003D1C;
+  --bg-app:         #F8F9FA;
+  --gray-50:  #F8FAFC; --gray-100: #F3F4F6; --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB; --gray-400: #9CA3AF; --gray-500: #6B7280;
+  --gray-600: #4B5563; --gray-700: #374151; --gray-900: #111827;
+  --fg-1: var(--gray-900);
+  --fg-2: var(--gray-600);
+  --fg-3: var(--gray-400);
+  --font-body:  'Inter', system-ui, sans-serif;
+  --font-price: 'DM Sans', 'Inter', sans-serif;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+  --dur: 200ms;
+  --ease-out: cubic-bezier(0.2,0.8,0.2,1);
+}
+
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg-app); font-family:var(--font-body); color:var(--fg-1); font-size:14px; -webkit-font-smoothing:antialiased; }
+
+/* ── Kit header ── */
+.kit-head { padding:40px 24px 24px; max-width:1280px; margin:0 auto; }
+.kit-title { font-size:36px; font-weight:700; letter-spacing:-0.02em; margin:0 0 6px; }
+.kit-sub { color:var(--fg-2); font-size:15px; }
+.page { max-width:1280px; margin:0 auto; padding:0 24px 80px; }
+.section { margin-top:56px; }
+.section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--primary-dark); margin-bottom:8px; display:flex; align-items:center; gap:10px; }
+.section-label::before { content:''; width:18px; height:2px; background:var(--primary); border-radius:999px; }
+.section h2 { font-size:22px; font-weight:700; margin:0 0 18px; }
+
+/* ════════════════════════════════════════════════════════════════════
+   Admin Shell
+════════════════════════════════════════════════════════════════════ */
+.admin { display:grid; grid-template-columns:240px 1fr; border-radius:16px; overflow:hidden; border:1px solid var(--gray-200); background:#fff; box-shadow:var(--shadow-sm); min-height:580px; }
+
+/* Sidebar — vert sombre #003D1C */
+.sidebar { background:var(--ta-dark-2); color:#fff; padding:18px 14px; }
+.sidebar .logo { display:flex; align-items:center; gap:8px; margin-bottom:24px; padding:0 6px; }
+.sidebar .logo span { font-weight:900; font-size:18px; letter-spacing:-0.02em; color:#fff; }
+.sidebar .logo .dot { width:8px; height:8px; border-radius:2px; background:var(--accent); }
+.sidebar .tag { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent); padding:0 6px; margin-bottom:10px; }
+.nav a { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px; color:rgba(255,255,255,.7); font-size:13px; font-weight:500; margin-bottom:2px; text-decoration:none; cursor:pointer; }
+.nav a:hover { background:rgba(255,255,255,.06); color:#fff; }
+.nav a.active { background:linear-gradient(135deg, var(--primary), var(--primary-dark)); color:#fff; box-shadow:0 2px 8px rgba(0,154,68,.35); }
+.nav a .count { margin-left:auto; font-size:10px; background:var(--secondary); color:#fff; padding:2px 6px; border-radius:999px; font-weight:700; }
+.nav a.active .count { background:var(--accent); color:var(--ta-dark); }
+
+/* Main content */
+.main { padding:20px 24px 32px; background:var(--bg-app); }
+.main-head { display:flex; align-items:center; margin-bottom:18px; gap:14px; }
+.main-head h1 { font-size:22px; margin:0; }
+.main-head .crumb { color:var(--fg-3); font-size:12px; margin-left:2px; }
+.main-head .search { margin-left:auto; display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--gray-200); border-radius:8px; padding:6px 12px; width:240px; }
+.main-head .search input { border:0; outline:0; font:inherit; font-size:13px; flex:1; }
+.main-head .bell { width:34px; height:34px; border-radius:8px; background:#fff; border:1px solid var(--gray-200); display:flex; align-items:center; justify-content:center; position:relative; }
+.main-head .bell::after { content:''; position:absolute; top:8px; right:8px; width:7px; height:7px; background:var(--secondary); border-radius:999px; border:1.5px solid #fff; }
+.main-head .me { display:flex; align-items:center; gap:8px; padding:4px 10px 4px 4px; background:#fff; border:1px solid var(--gray-200); border-radius:999px; }
+.main-head .me .av { width:28px; height:28px; border-radius:999px; background:linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:11px; }
+.main-head .me span { font-size:12px; font-weight:600; }
+
+/* ── Stat cards ── */
+.stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+.stat { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:16px; position:relative; overflow:hidden; }
+.stat::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; }
+.stat.green::before { background:var(--primary); }
+.stat.gold::before  { background:var(--accent); }
+.stat.red::before   { background:var(--secondary); }
+.stat.purple::before{ background:#8B5CF6; }
+.stat .head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.stat .lbl { font-size:11px; font-weight:600; color:var(--fg-2); text-transform:uppercase; letter-spacing:0.05em; }
+.stat .ico { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+.stat .val { font-family:var(--font-price); font-weight:700; font-size:24px; color:var(--fg-1); line-height:1.1; }
+.stat .sub { font-size:11px; color:var(--fg-3); margin-top:2px; display:flex; align-items:center; gap:4px; }
+.stat .sub .up   { color:var(--primary); font-weight:600; }
+.stat .sub .down { color:var(--secondary); font-weight:600; }
+
+/* ── Charts row ── */
+.charts { display:grid; grid-template-columns:2fr 1fr; gap:14px; margin-bottom:20px; }
+.card { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:18px; }
+.card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.card-head h3 { font-size:14px; margin:0; }
+.card-head .tabs { display:flex; gap:4px; }
+.card-head .tabs button { font:inherit; font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; border:0; background:transparent; color:var(--fg-2); cursor:pointer; }
+.card-head .tabs button.on { background:var(--primary-50); color:var(--primary-dark); }
+.chart-sales { height:200px; position:relative; }
+.chart-sales svg { width:100%; height:100%; overflow:visible; }
+
+/* Donut */
+.donut { display:flex; flex-direction:column; align-items:center; gap:12px; }
+.donut-svg { width:140px; height:140px; }
+.legend { display:flex; flex-direction:column; gap:6px; font-size:12px; width:100%; }
+.legend div { display:flex; align-items:center; gap:8px; }
+.legend .sw { width:10px; height:10px; border-radius:2px; }
+.legend span:nth-child(2) { flex:1; }
+.legend b { font-family:var(--font-price); font-weight:700; }
+
+/* ── Order table ── */
+.table { width:100%; border-collapse:collapse; font-size:13px; }
+.table th { text-align:left; font-weight:600; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:var(--fg-3); padding:10px 12px; border-bottom:1px solid var(--gray-200); background:var(--gray-50); }
+.table td { padding:12px; border-bottom:1px solid var(--gray-100); }
+.table tr:last-child td { border-bottom:0; }
+.table .id { font-family:ui-monospace, monospace; font-size:12px; color:var(--primary-dark); font-weight:600; }
+.table .who { display:flex; align-items:center; gap:8px; }
+.table .who .av { width:28px; height:28px; border-radius:999px; font-size:11px; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; }
+.table .who .n { font-weight:500; }
+.table .who .m { font-size:11px; color:var(--fg-3); }
+.table .amt { font-family:var(--font-price); font-weight:700; }
+.status { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:600; }
+.status.pending   { background:#FEF3C7; color:#B45309; }
+.status.confirmed { background:#E6F7EE; color:#007A35; }
+.status.shipped   { background:#EDE9FE; color:#6D28D9; }
+.status.delivered { background:#D1FAE5; color:#047857; }
+.status.cancelled { background:#FDEAEA; color:#8A0D13; }
+.pay-chip { display:inline-flex; align-items:center; gap:4px; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:600; background:var(--gray-100); color:var(--fg-2); }
+.row-actions { display:flex; gap:4px; }
+.row-actions button { width:26px; height:26px; border-radius:6px; border:0; background:var(--gray-100); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--fg-2); }
+.row-actions button:hover { background:var(--primary-50); color:var(--primary-dark); }
+
+/* ── Product editor ── */
+.editor-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+label.field { display:block; }
+label.field span { font-size:11px; font-weight:600; color:var(--fg-2); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; display:block; }
+label.field input, label.field select, label.field textarea { width:100%; padding:9px 12px; border:1px solid var(--gray-300); border-radius:8px; font:inherit; font-size:13px; box-sizing:border-box; background:#fff; }
+label.field input:focus, label.field textarea:focus { outline:0; border-color:var(--primary); box-shadow:0 0 0 3px rgba(0,154,68,.15); }
+.chip-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+.chip { padding:4px 10px; border-radius:999px; font-size:11px; font-weight:600; background:var(--gray-100); color:var(--fg-2); cursor:pointer; border:1px solid transparent; }
+.chip.on { background:var(--primary-50); color:var(--primary-dark); border-color:rgba(0,154,68,.25); }
+.toggle { display:flex; align-items:center; gap:8px; padding:8px 0; }
+.toggle .track { width:34px; height:20px; background:var(--primary); border-radius:999px; position:relative; }
+.toggle .track::after { content:''; position:absolute; top:2px; right:2px; width:16px; height:16px; border-radius:999px; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+.toggle.off .track { background:var(--gray-300); }
+.toggle.off .track::after { left:2px; right:auto; }
+
+/* ── Pan-African strip ── */
+.pan-strip { display:flex; height:4px; }
+.pan-strip > :nth-child(1) { flex:1; background:var(--primary); }
+.pan-strip > :nth-child(2) { flex:1; background:var(--accent); }
+.pan-strip > :nth-child(3) { flex:1; background:var(--secondary); }
+</style>
+</head>
+<body>
+
+<!-- Pan-African strip -->
+<div class="pan-strip"><div></div><div></div><div></div></div>
+
+<div class="kit-head">
+  <div class="kit-title">Admin dashboard · UI Kit</div>
+  <div class="kit-sub">Composants staff pour gérer produits, commandes, coupons, bannières et utilisateurs.</div>
+</div>
+
+<div class="page">
+
+<!-- ══════════════════════════════════════════════════════
+     SHELL — DASHBOARD OVERVIEW
+══════════════════════════════════════════════════════ -->
+<section class="section">
+  <div class="section-label">Shell</div>
+  <h2>Dashboard · vue générale</h2>
+
+  <div class="admin">
+    <!-- SIDEBAR vert sombre #003D1C -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span>Sunu</span>
+        <div class="dot"></div>
+        <span>Shop</span>
+      </div>
+      <div class="tag">Gestion</div>
+      <div class="nav">
+        <a class="active">
+          <i data-lucide="layout-dashboard" style="width:16px;height:16px"></i>
+          Tableau de bord
+        </a>
+        <a>
+          <i data-lucide="package" style="width:16px;height:16px"></i>
+          Produits <span class="count">248</span>
+        </a>
+        <a>
+          <i data-lucide="shopping-bag" style="width:16px;height:16px"></i>
+          Commandes <span class="count">12</span>
+        </a>
+        <a>
+          <i data-lucide="users" style="width:16px;height:16px"></i>
+          Clients
+        </a>
+        <a>
+          <i data-lucide="ticket" style="width:16px;height:16px"></i>
+          Coupons
+        </a>
+        <a>
+          <i data-lucide="image" style="width:16px;height:16px"></i>
+          Bannières
+        </a>
+        <a>
+          <i data-lucide="bar-chart-3" style="width:16px;height:16px"></i>
+          Rapports
+        </a>
+      </div>
+      <div class="tag" style="margin-top:18px">Système</div>
+      <div class="nav">
+        <a><i data-lucide="settings" style="width:16px;height:16px"></i>Paramètres</a>
+        <a><i data-lucide="log-out" style="width:16px;height:16px"></i>Déconnexion</a>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="main-head">
+        <div>
+          <h1>Bonjour Amadou 👋</h1>
+          <div class="crumb">Tableau de bord · 19 avril 2026</div>
+        </div>
+        <div class="search">
+          <i data-lucide="search" style="width:14px;height:14px;color:#9CA3AF"></i>
+          <input placeholder="Rechercher produit, commande...">
+        </div>
+        <div class="bell"><i data-lucide="bell" style="width:16px;height:16px;color:#4B5563"></i></div>
+        <div class="me">
+          <div class="av">AF</div>
+          <span>Amadou F.</span>
+          <i data-lucide="chevron-down" style="width:14px;height:14px;color:#6B7280"></i>
+        </div>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="stats">
+        <div class="stat green">
+          <div class="head">
+            <span class="lbl">Ventes du jour</span>
+            <div class="ico" style="background:rgba(0,154,68,.1)">
+              <i data-lucide="trending-up" style="width:16px;height:16px;color:#009A44"></i>
+            </div>
+          </div>
+          <div class="val">1 240 000 <span style="font-size:11px;font-weight:500;color:var(--fg-3)">FCFA</span></div>
+          <div class="sub"><span class="up">↑ 12.4%</span> vs hier</div>
+        </div>
+        <div class="stat gold">
+          <div class="head">
+            <span class="lbl">Commandes</span>
+            <div class="ico" style="background:rgba(252,209,22,.18)">
+              <i data-lucide="shopping-bag" style="width:16px;height:16px;color:#9A7A00"></i>
+            </div>
+          </div>
+          <div class="val">48</div>
+          <div class="sub"><span class="up">↑ 8</span> nouvelles aujourd'hui</div>
+        </div>
+        <div class="stat red">
+          <div class="head">
+            <span class="lbl">En attente</span>
+            <div class="ico" style="background:rgba(227,27,35,.1)">
+              <i data-lucide="clock" style="width:16px;height:16px;color:#E31B23"></i>
+            </div>
+          </div>
+          <div class="val">12</div>
+          <div class="sub">3 urgentes · WhatsApp</div>
+        </div>
+        <div class="stat purple">
+          <div class="head">
+            <span class="lbl">Clients actifs</span>
+            <div class="ico" style="background:#EDE9FE">
+              <i data-lucide="users" style="width:16px;height:16px;color:#6D28D9"></i>
+            </div>
+          </div>
+          <div class="val">2 482</div>
+          <div class="sub"><span class="up">↑ 18</span> cette semaine</div>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="charts">
+        <div class="card">
+          <div class="card-head">
+            <h3>Revenus · 7 derniers jours</h3>
+            <div class="tabs">
+              <button>24h</button>
+              <button class="on">7j</button>
+              <button>30j</button>
+            </div>
+          </div>
+          <div class="chart-sales">
+            <svg viewBox="0 0 700 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#009A44" stop-opacity="0.3"></stop>
+                  <stop offset="100%" stop-color="#009A44" stop-opacity="0"></stop>
+                </linearGradient>
+              </defs>
+              <path d="M0,160 L100,120 L200,140 L300,80 L400,100 L500,50 L600,70 L700,30 L700,200 L0,200 Z" fill="url(#fill)"></path>
+              <path d="M0,160 L100,120 L200,140 L300,80 L400,100 L500,50 L600,70 L700,30" fill="none" stroke="#009A44" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              <circle cx="100" cy="120" r="4" fill="#009A44"></circle>
+              <circle cx="200" cy="140" r="4" fill="#009A44"></circle>
+              <circle cx="300" cy="80"  r="4" fill="#009A44"></circle>
+              <circle cx="400" cy="100" r="4" fill="#009A44"></circle>
+              <circle cx="500" cy="50"  r="4" fill="#009A44"></circle>
+              <circle cx="600" cy="70"  r="4" fill="#009A44"></circle>
+              <circle cx="700" cy="30"  r="5" fill="#FCD116" stroke="#009A44" stroke-width="2"></circle>
+              <g font-size="10" fill="#9CA3AF" font-family="ui-monospace,monospace">
+                <text x="0"   y="196">Lun</text>
+                <text x="100" y="196">Mar</text>
+                <text x="200" y="196">Mer</text>
+                <text x="300" y="196">Jeu</text>
+                <text x="400" y="196">Ven</text>
+                <text x="500" y="196">Sam</text>
+                <text x="600" y="196">Dim</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>Paiements</h3></div>
+          <div class="donut">
+            <svg class="donut-svg" viewBox="0 0 42 42">
+              <circle cx="21" cy="21" r="15.9" fill="#fff" stroke="#F3F4F6" stroke-width="6"></circle>
+              <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#FF6600" stroke-width="6" stroke-dasharray="42 58" stroke-dashoffset="25" transform="rotate(-90 21 21)"></circle>
+              <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#1DC8FF" stroke-width="6" stroke-dasharray="30 70" stroke-dashoffset="-17" transform="rotate(-90 21 21)"></circle>
+              <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#635BFF" stroke-width="6" stroke-dasharray="18 82" stroke-dashoffset="-47" transform="rotate(-90 21 21)"></circle>
+              <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#009A44" stroke-width="6" stroke-dasharray="10 90" stroke-dashoffset="-65" transform="rotate(-90 21 21)"></circle>
+              <text x="21" y="20" text-anchor="middle" font-size="5" font-weight="700" font-family="DM Sans,sans-serif" fill="#1A1A2E">48</text>
+              <text x="21" y="25" text-anchor="middle" font-size="2.2" fill="#6B7280">commandes</text>
+            </svg>
+            <div class="legend">
+              <div><span class="sw" style="background:#FF6600"></span><span>🟠 Orange Money</span><b>42%</b></div>
+              <div><span class="sw" style="background:#1DC8FF"></span><span>🌊 Wave</span><b>30%</b></div>
+              <div><span class="sw" style="background:#635BFF"></span><span>💳 Carte Stripe</span><b>18%</b></div>
+              <div><span class="sw" style="background:#009A44"></span><span>🤝 À la livraison</span><b>10%</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDER TABLE -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="card-head" style="padding:18px 18px 0;">
+          <h3>Commandes récentes</h3>
+          <a style="font-size:12px;color:var(--primary);font-weight:600;text-decoration:none">Voir tout →</a>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>N°</th><th>Client</th><th>Articles</th>
+              <th>Montant</th><th>Paiement</th><th>Statut</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="id">#SH-10482</span></td>
+              <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#009A44,#007A35)">MK</div><div><div class="n">Moussa Kane</div><div class="m">🇸🇳 Dakar</div></div></div></td>
+              <td>VivoBook 15 · <span style="color:var(--fg-3)">+2</span></td>
+              <td class="amt">785 000 FCFA</td>
+              <td><span class="pay-chip">🟠 Orange</span></td>
+              <td><span class="status pending">● En attente</span></td>
+              <td><div class="row-actions"><button><i data-lucide="eye" style="width:13px;height:13px"></i></button><button><i data-lucide="check" style="width:13px;height:13px"></i></button></div></td>
+            </tr>
+            <tr>
+              <td><span class="id">#SH-10481</span></td>
+              <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#E31B23,#B81219)">FD</div><div><div class="n">Fatou Diop</div><div class="m">🇬🇳 Conakry</div></div></div></td>
+              <td>Galaxy A55 5G</td>
+              <td class="amt">235 000 FCFA</td>
+              <td><span class="pay-chip">🌊 Wave</span></td>
+              <td><span class="status confirmed">● Confirmée</span></td>
+              <td><div class="row-actions"><button><i data-lucide="eye" style="width:13px;height:13px"></i></button><button><i data-lucide="truck" style="width:13px;height:13px"></i></button></div></td>
+            </tr>
+            <tr>
+              <td><span class="id">#SH-10480</span></td>
+              <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#FCD116,#CCB000);color:#1A1A2E">IT</div><div><div class="n">Ibrahim Touré</div><div class="m">🇲🇱 Bamako</div></div></div></td>
+              <td>LG Smart TV 55" · <span style="color:var(--fg-3)">+1</span></td>
+              <td class="amt">634 000 FCFA</td>
+              <td><span class="pay-chip">💳 Carte</span></td>
+              <td><span class="status shipped">● Expédiée</span></td>
+              <td><div class="row-actions"><button><i data-lucide="eye" style="width:13px;height:13px"></i></button></div></td>
+            </tr>
+            <tr>
+              <td><span class="id">#SH-10479</span></td>
+              <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#8B5CF6,#6D28D9)">AS</div><div><div class="n">Aïssatou Sow</div><div class="m">🇸🇳 Thiès</div></div></div></td>
+              <td>WH-1000XM5</td>
+              <td class="amt">285 000 FCFA</td>
+              <td><span class="pay-chip">🤝 COD</span></td>
+              <td><span class="status delivered">● Livrée</span></td>
+              <td><div class="row-actions"><button><i data-lucide="eye" style="width:13px;height:13px"></i></button></div></td>
+            </tr>
+            <tr>
+              <td><span class="id">#SH-10478</span></td>
+              <td><div class="who"><div class="av" style="background:linear-gradient(135deg,#6B7280,#374151)">OB</div><div><div class="n">Oumar Ba</div><div class="m">🇸🇳 Saint-Louis</div></div></div></td>
+              <td>PS5 Slim Bundle</td>
+              <td class="amt">485 000 FCFA</td>
+              <td><span class="pay-chip">🌊 Wave</span></td>
+              <td><span class="status cancelled">● Annulée</span></td>
+              <td><div class="row-actions"><button><i data-lucide="eye" style="width:13px;height:13px"></i></button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     PRODUCT EDITOR
+══════════════════════════════════════════════════════ -->
+<section class="section">
+  <div class="section-label">Forms</div>
+  <h2>Éditeur produit</h2>
+  <div class="card">
+    <div class="card-head">
+      <h3>Modifier · VivoBook 15 Intel Core i5</h3>
+      <div style="display:flex;gap:8px">
+        <button style="background:transparent;border:1px solid var(--gray-300);color:var(--fg-2);padding:7px 16px;border-radius:8px;font:inherit;font-size:13px;font-weight:500;cursor:pointer">Annuler</button>
+        <button style="background:linear-gradient(135deg,#009A44,#007A35);color:#fff;border:0;padding:8px 18px;border-radius:8px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 6px 20px rgba(0,154,68,.35)">Enregistrer</button>
+      </div>
+    </div>
+    <div class="editor-grid">
+      <label class="field"><span>Nom du produit</span><input value="VivoBook 15 Intel Core i5 11e gen"></label>
+      <label class="field"><span>Marque</span><input value="ASUS"></label>
+      <label class="field"><span>Prix (FCFA)</span><input value="450000"></label>
+      <label class="field"><span>Prix barré (FCFA)</span><input value="530000" placeholder="—"></label>
+      <label class="field"><span>Stock</span><input value="3"></label>
+      <label class="field"><span>Catégorie</span>
+        <select>
+          <option>💻 Informatique</option>
+          <option>📱 Téléphonie Mobile</option>
+          <option>📺 Électronique & TV</option>
+          <option>🏠 Électroménager</option>
+          <option>🎮 Gaming</option>
+        </select>
+      </label>
+      <label class="field" style="grid-column:1/-1"><span>Description courte</span>
+        <textarea rows="2">Laptop polyvalent pour le bureau et les études. 8GB RAM DDR4, SSD 512GB, écran 15.6" FHD.</textarea>
+      </label>
+    </div>
+    <div style="margin-top:14px">
+      <span style="font-size:11px;font-weight:600;color:var(--fg-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:block">Badges</span>
+      <div class="chip-row">
+        <span class="chip on">NEW</span>
+        <span class="chip on">-15%</span>
+        <span class="chip">EXCLUSIF</span>
+        <span class="chip">Bestseller</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:24px;margin-top:14px;flex-wrap:wrap">
+      <div class="toggle"><div class="track"></div><span style="font-size:13px">Produit visible</span></div>
+      <div class="toggle"><div class="track"></div><span style="font-size:13px">Livraison gratuite</span></div>
+      <div class="toggle off"><div class="track"></div><span style="font-size:13px">Retrait en magasin uniquement</span></div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /page -->
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

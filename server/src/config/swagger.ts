@@ -5,10 +5,10 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'TechAfrique API',
+      title: 'SunuShop API',
       version: '1.0.0',
       description: `
-API e-commerce TechAfrique — Informatique, Téléphonie, Électronique, Électroménager, Accessoires & Gaming.
+API e-commerce SunuShop — Informatique, Téléphonie, Électronique, Électroménager, Accessoires & Gaming.
 
 **Marché cible :** Sénégal, Mali, Guinée (Afrique de l'Ouest)
 **Devise principale :** FCFA (XOF)
@@ -19,8 +19,8 @@ Utiliser le header \`Authorization: Bearer <accessToken>\` sur les routes proté
 Le token d'accès expire en **15 minutes**. Utiliser \`POST /auth/refresh-token\` pour en obtenir un nouveau.
       `.trim(),
       contact: {
-        name: 'TechAfrique Support',
-        email: 'support@techafrique.sn',
+        name: 'SunuShop Support',
+        email: 'support@sunushop.sn',
       },
     },
     servers: [
@@ -29,7 +29,7 @@ Le token d'accès expire en **15 minutes**. Utiliser \`POST /auth/refresh-token\
         description: 'Développement local',
       },
       {
-        url: 'https://api.techafrique.sn/api/v1',
+        url: 'https://api.sunushop.sn/api/v1',
         description: 'Production',
       },
     ],
@@ -216,6 +216,7 @@ Le token d'accès expire en **15 minutes**. Utiliser \`POST /auth/refresh-token\
     security: [{ bearerAuth: [] }],
     tags: [
       { name: 'Auth', description: 'Inscription, connexion, gestion des tokens' },
+      { name: 'Users', description: 'Profil, adresses, préférences utilisateur — gestion admin' },
       { name: 'Products', description: 'Catalogue produits — lecture publique, CRUD admin' },
       { name: 'Categories', description: 'Catégories produits (hiérarchie parent/enfant)' },
       { name: 'Orders', description: 'Commandes client et gestion admin' },
@@ -224,11 +225,13 @@ Le token d'accès expire en **15 minutes**. Utiliser \`POST /auth/refresh-token\
       { name: 'Coupons', description: 'Codes promo et validation' },
       { name: 'Wishlist', description: 'Liste de souhaits utilisateur' },
       { name: 'Services', description: 'Services réparation/installation (contact WhatsApp)' },
-      { name: 'Notifications', description: 'Notifications temps réel' },
+      { name: 'Notifications', description: 'Notifications temps réel utilisateur' },
       { name: 'Upload', description: 'Upload images vers Cloudinary' },
-      { name: 'Analytics', description: 'Statistiques et tableaux de bord admin' },
+      { name: 'Analytics', description: 'Statistiques et tableaux de bord admin (protégé)' },
       { name: 'Newsletter', description: 'Abonnements et campagnes newsletter' },
-      { name: 'Banners', description: 'Bannières homepage' },
+      { name: 'Banners', description: 'Bannières hero et promo homepage (type=hero|promo)' },
+      { name: 'Announcements', description: 'Bandeaux d\'annonce en haut de page' },
+      { name: 'PaymentSettings', description: 'QR codes et numéros pour Wave / Orange Money' },
     ],
   },
   apis: ['./src/routes/*.ts'],

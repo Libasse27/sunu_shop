@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Search, Star, CheckCircle, XCircle, MessageSquare, X, Eye, Trash2 } from 'lucide-react';
+import { Search, Star, CheckCircle, XCircle, MessageSquare, Eye, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminEmptyState from '../../components/admin/AdminEmptyState';
 import AdminConfirmDialog from '../../components/admin/AdminConfirmDialog';
+import { ReviewReplyModal } from '../../components/admin/reviews/ReviewReplyModal';
 import { adminReviewsApi } from '../../services/admin.api';
 import StarRating from '../../components/common/StarRating';
 import toast from 'react-hot-toast';
@@ -47,7 +48,6 @@ export default function AdminReviewsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [pendingCount, setPendingCount] = useState(0);
 
   // Reply modal
   const [replyReview, setReplyReview] = useState<Review | null>(null);
@@ -71,11 +71,8 @@ export default function AdminReviewsPage() {
         status: statusFilter !== 'all' ? statusFilter : undefined,
       });
       setReviews(data.data || []);
-      setTotalPages(data.pagination?.pages || 1);
+      setTotalPages(data.pagination?.totalPages || 1);
       setTotal(data.pagination?.total || 0);
-      if (statusFilter === 'all' && !search) {
-        setPendingCount((data.data || []).filter((r: Review) => r.status === 'pending').length);
-      }
     } catch {
       toast.error('Erreur lors du chargement');
     } finally {
@@ -90,8 +87,9 @@ export default function AdminReviewsPage() {
       await adminReviewsApi.approve(id);
       toast.success('Avis approuvé');
       fetchReviews();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erreur lors de l'approbation");
+    } catch (err) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e?.response?.data?.message || "Erreur lors de l'approbation");
     }
   };
 
@@ -103,8 +101,9 @@ export default function AdminReviewsPage() {
       toast.success('Avis rejeté');
       setRejectTarget(null);
       fetchReviews();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Erreur lors du rejet');
+    } catch (err) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e?.response?.data?.message || 'Erreur lors du rejet');
     } finally {
       setRejecting(false);
     }
@@ -125,8 +124,9 @@ export default function AdminReviewsPage() {
       setReplyReview(null);
       setReplyText('');
       fetchReviews();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Erreur');
+    } catch (err) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e?.response?.data?.message || 'Erreur');
     } finally {
       setSubmittingReply(false);
     }
@@ -140,8 +140,9 @@ export default function AdminReviewsPage() {
       toast.success('Avis supprimé');
       setDeleteTarget(null);
       fetchReviews();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Erreur');
+    } catch (err) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e?.response?.data?.message || 'Erreur');
     } finally {
       setDeleting(false);
     }
@@ -160,7 +161,7 @@ export default function AdminReviewsPage() {
       <AdminLayout title="Avis clients">
         <AdminPageHeader
           title="Avis clients"
-          subtitle={pendingCount > 0 ? `${pendingCount} avis en attente de modération` : `${total} avis au total`}
+          subtitle={statusFilter === 'pending' ? `${total} avis en attente de modération` : `${total} avis au total`}
           breadcrumb={[{ label: 'Admin', href: '/admin' }, { label: 'Avis clients' }]}
         />
 
@@ -314,52 +315,14 @@ export default function AdminReviewsPage() {
         </div>
       </AdminLayout>
 
-      {/* Modal réponse (custom) */}
-      {replyReview && (
-        <div className="fixed inset-0" style={{ zIndex: 60 }}>
-          <div className="absolute inset-0 bg-black/50" onClick={() => setReplyReview(null)} />
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full shadow-2xl" style={{ maxWidth: 520 }}>
-              <div className="flex items-center justify-between px-6 py-4 border-b">
-                <h2 className="font-bold text-gray-900 text-lg mb-0">Répondre à l'avis</h2>
-                <button onClick={() => setReplyReview(null)} className="p-2 rounded-lg border-0 bg-gray-100 text-gray-500 cursor-pointer">
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="p-6">
-                <div className="p-4 rounded-xl bg-gray-50 mb-4">
-                  <p className="font-medium text-sm mb-1">{replyReview.product.name}</p>
-                  <StarRating rating={replyReview.rating} />
-                  <p className="text-sm text-gray-600 italic mt-2 mb-0">"{replyReview.comment}"</p>
-                </div>
-                <form onSubmit={handleSubmitReply} className="flex flex-col gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Votre réponse</label>
-                    <textarea
-                      value={replyText}
-                      onChange={e => setReplyText(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
-                      rows={5}
-                      placeholder="Merci pour votre avis..."
-                      required
-                    />
-                    <p className="text-xs text-gray-400 mt-1">Cette réponse sera visible publiquement sous l'avis.</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <button type="button" onClick={() => setReplyReview(null)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 bg-white cursor-pointer">
-                      Annuler
-                    </button>
-                    <button type="submit" disabled={submittingReply} className="flex-1 px-4 py-2 rounded-lg text-sm text-white border-0 cursor-pointer disabled:opacity-60"
-                      style={{ backgroundColor: '#009A44' }}>
-                      {submittingReply ? 'Envoi...' : replyReview.adminReply ? 'Mettre à jour' : 'Envoyer la réponse'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ReviewReplyModal
+        review={replyReview}
+        replyText={replyText}
+        submitting={submittingReply}
+        onClose={() => setReplyReview(null)}
+        onReplyChange={setReplyText}
+        onSubmit={handleSubmitReply}
+      />
 
       <AdminConfirmDialog
         open={!!rejectTarget}

@@ -1,27 +1,23 @@
 /**
  * order.service.ts — Couche service pour la gestion des commandes
  *
- * Centralise la logique métier extraite du controller :
- *   - Validation du stock produit (atomique via findOneAndUpdate)
- *   - Application des coupons de réduction
- *   - Calcul des totaux (sous-total, livraison, remise, total)
- *   - Création de commande avec rollback stock si échec
- *   - Annulation de commande et restitution du stock
- *   - Pagination de l'historique commandes utilisateur
+ * Délègue à pricing.service, inventory.service et coupon.service.
+ * Ne contient plus de logique de calcul dupliquée.
  */
 
 import Order, { IOrder } from '../models/Order.model';
 import Product from '../models/Product.model';
-import Coupon, { ICoupon } from '../models/Coupon.model';
 import User from '../models/User.model';
 import { ApiError } from '../utils/ApiError';
-import { sendEmail, emailTemplates } from '../utils/sendEmail';
-import { FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from '../utils/constants';
+import { emailService } from './email.service';
 import { getPagination, getPaginationResult } from '../utils/pagination';
+import { pricingService } from './pricing.service';
+import { inventoryService } from './inventory.service';
+import { couponService } from './coupon.service';
 import logger from '../utils/logger';
 import mongoose from 'mongoose';
 
-// ─── Types internes ────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface OrderItem {
   product: string | mongoose.Types.ObjectId;
@@ -40,14 +36,10 @@ interface ShippingAddress {
   instructions?: string;
 }
 
-interface PaymentInput {
-  method: string;
-}
-
 interface CreateOrderInput {
   items: OrderItem[];
   shippingAddress: ShippingAddress;
-  payment: PaymentInput;
+  payment: { method: string };
   couponCode?: string;
   customerNote?: string;
   isGift?: boolean;
@@ -59,149 +51,104 @@ interface PaginatedOrders {
   pagination: ReturnType<typeof getPaginationResult>;
 }
 
-// ─── Helpers internes ─────────────────────────────────────────────────────────
-
-/** Valide le stock disponible pour tous les items et retourne un cache produit. */
-async function validateItemsStock(
-  items: OrderItem[],
-): Promise<{ preSubtotal: number; productCache: Record<string, { name: string; price: number; images: Array<{ url: string }> }> }> {
-  let preSubtotal = 0;
-  const productCache: Record<string, { name: string; price: number; images: Array<{ url: string }> }> = {};
-
-  for (const item of items) {
-    const product = await Product.findById(item.product);
-    if (!product) throw ApiError.notFound(`Produit ${item.product} non trouvé`);
-    if (product.stock < item.quantity) {
-      throw ApiError.badRequest(`Stock insuffisant pour ${product.name}`);
-    }
-    preSubtotal += product.price * item.quantity;
-    productCache[item.product.toString()] = {
-      name:   product.name,
-      price:  product.price,
-      images: product.images,
-    };
-  }
-
-  return { preSubtotal, productCache };
-}
-
-interface CouponResult {
-  discount: number;
-  appliedCoupon: ICoupon | null;
-}
-
-/** Valide et calcule la remise coupon si un code est fourni. */
-async function validateCoupon(
-  couponCode: string | undefined,
-  userId: string,
-  preSubtotal: number,
-): Promise<CouponResult> {
-  if (!couponCode) return { discount: 0, appliedCoupon: null };
-
-  const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
-  if (!coupon) return { discount: 0, appliedCoupon: null };
-
-  const now = new Date();
-  if (now < coupon.startDate || now > coupon.endDate) return { discount: 0, appliedCoupon: null };
-
-  const userUsage  = coupon.usedBy.filter(u => u.user.toString() === userId).length;
-  const notExhausted = !coupon.maxUsage || coupon.usedCount < coupon.maxUsage;
-
-  if (!notExhausted || userUsage >= coupon.maxUsagePerUser || preSubtotal < coupon.minOrderAmount) {
-    return { discount: 0, appliedCoupon: null };
-  }
-
-  let discount = 0;
-  if (coupon.type === 'percentage') {
-    discount = Math.round((preSubtotal * coupon.value) / 100);
-    if (coupon.maxDiscount) discount = Math.min(discount, coupon.maxDiscount);
-  } else if (coupon.type === 'fixed_amount') {
-    discount = Math.min(coupon.value, preSubtotal);
-  }
-
-  return { discount, appliedCoupon: coupon };
-}
-
-/** Déduit le stock de manière atomique avec rollback automatique en cas d'erreur. */
-async function deductStockAtomic(
-  items: OrderItem[],
-  productCache: Record<string, { name: string; price: number; images: Array<{ url: string }> }>,
-): Promise<{ subtotal: number; orderItems: IOrder['items'] }> {
-  let subtotal = 0;
-  const orderItems: IOrder['items'] = [];
-  const deducted: Array<{ id: string; qty: number }> = [];
-
-  for (const item of items) {
-    const product = await Product.findOneAndUpdate(
-      { _id: item.product, stock: { $gte: item.quantity } },
-      { $inc: { stock: -item.quantity, totalSold: item.quantity } },
-      { new: true },
-    );
-
-    if (!product) {
-      // Rollback des déductions précédentes
-      await Promise.all(
-        deducted.map(d =>
-          Product.findByIdAndUpdate(d.id, { $inc: { stock: d.qty, totalSold: -d.qty } }),
-        ),
-      );
-      throw ApiError.badRequest('Stock insuffisant pour un produit (concurrence)');
-    }
-
-    deducted.push({ id: item.product.toString(), qty: item.quantity });
-    const cached = productCache[item.product.toString()];
-    const itemSubtotal = cached.price * item.quantity;
-    subtotal += itemSubtotal;
-
-    orderItems.push({
-      product:  product._id,
-      name:     cached.name,
-      image:    cached.images[0]?.url || '',
-      variant:  item.variant,
-      price:    cached.price,
-      quantity: item.quantity,
-      subtotal: itemSubtotal,
-    });
-  }
-
-  return { subtotal, orderItems };
-}
-
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 export class OrderService {
+
   /**
-   * Crée une commande après validation stock et coupon.
-   * Décrémente le stock de façon atomique et envoie l'email de confirmation.
-   *
-   * @param userId - ID de l'utilisateur connecté
-   * @param input  - Corps de la requête typé
+   * Crée une commande :
+   *   1. Valide le stock via inventoryService
+   *   2. Valide et calcule le coupon via couponService
+   *   3. Calcule les prix via pricingService
+   *   4. Déduit le stock de façon atomique via inventoryService
+   *   5. Persiste la commande (rollback stock si échec)
+   *   6. Enregistre l'usage du coupon
+   *   7. Envoie l'email de confirmation (non bloquant)
    */
   async createOrder(userId: string, input: CreateOrderInput): Promise<IOrder> {
     const { items, shippingAddress, payment, couponCode, customerNote, isGift, giftMessage } = input;
 
     if (!items?.length) throw ApiError.badRequest('Le panier est vide');
 
-    // 1. Validation du stock + cache produit
-    const { preSubtotal, productCache } = await validateItemsStock(items);
+    // 1. Validation du stock
+    const stockItems = items.map(i => ({ productId: String(i.product), quantity: i.quantity, variant: i.variant }));
+    const stockCheck = await inventoryService.validateStock(stockItems);
+    if (!stockCheck.valid) {
+      const msg = stockCheck.errors.map(e => `${e.name} : ${e.requested} demandé(s), ${e.available} disponible(s)`).join(' | ');
+      throw ApiError.badRequest(`Stock insuffisant — ${msg}`);
+    }
 
-    // 2. Validation coupon
-    const { discount, appliedCoupon } = await validateCoupon(couponCode, userId, preSubtotal);
+    // 2. Récupération des produits en une seule requête (évite N+1)
+    const productIds = items.map(i => String(i.product));
+    const foundProducts = await Product.find({ _id: { $in: productIds } })
+      .select('name price images isActive')
+      .lean();
+    const productMap = new Map(foundProducts.map(p => [String(p._id), p]));
 
-    // 3. Déduction stock atomique
-    const { subtotal, orderItems } = await deductStockAtomic(items, productCache);
+    const productCache: Record<string, { name: string; price: number; images: Array<{ url: string }> }> = {};
+    let preSubtotal = 0;
+    for (const item of items) {
+      const p = productMap.get(String(item.product));
+      if (!p) throw ApiError.notFound(`Produit ${item.product} non trouvé`);
+      if (!p.isActive) throw ApiError.badRequest(`Produit ${p.name} n'est plus disponible`);
+      productCache[String(item.product)] = { name: p.name, price: p.price, images: p.images };
+      preSubtotal += p.price * item.quantity;
+    }
 
-    // 4. Création de la commande (avec rollback stock si echec)
-    const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-    const total = subtotal + shippingCost - discount;
+    // 3. Validation coupon
+    let couponDiscount = 0;
+    let appliedCoupon = null;
+    let couponType: string | undefined;
+    if (couponCode) {
+      const couponResult = await couponService.validateCoupon(couponCode, userId, preSubtotal);
+      if (couponResult.valid && couponResult.coupon) {
+        couponDiscount = couponResult.discount;
+        appliedCoupon  = couponResult.coupon;
+        couponType     = appliedCoupon.type;
+      }
+    }
 
+    // 4. Déduction stock atomique
+    const deductResults = await inventoryService.deductStock(stockItems);
+
+    // 5-6. Construction items + pricing + persistance — tout dans le même try/catch
+    // pour garantir le rollback stock si n'importe quelle étape lève une erreur
     let order: IOrder;
     try {
+      // Construire les items de commande depuis le cache
+      const orderItems: IOrder['items'] = [];
+      let subtotal = 0;
+      for (const item of items) {
+        const cached = productCache[String(item.product)];
+        deductResults.find(d => d.productId === String(item.product));
+        const itemSubtotal = cached.price * item.quantity;
+        subtotal += itemSubtotal;
+
+        orderItems.push({
+          product:  new mongoose.Types.ObjectId(String(item.product)),
+          name:     cached.name,
+          image:    cached.images[0]?.url || '',
+          variant:  item.variant,
+          price:    cached.price,
+          quantity: item.quantity,
+          subtotal: itemSubtotal,
+        });
+      }
+
+      // Calcul des totaux via pricingService
+      const pricing = pricingService.calculateOrderPricing(
+        subtotal,
+        couponDiscount,
+        couponType,
+        couponCode,
+      );
+
+      // Création de la commande
       order = await Order.create({
         user:     userId,
         items:    orderItems,
         shippingAddress,
-        pricing:  { subtotal, shippingCost, tax: 0, discount, total },
+        pricing,
         payment:  { method: payment.method, status: 'pending' },
         status:   'pending',
         statusHistory: [{ status: 'pending', date: new Date(), note: 'Commande créée' }],
@@ -211,55 +158,49 @@ export class OrderService {
         giftMessage,
       });
     } catch (err) {
-      // Restitution du stock si la création de commande échoue
-      await Promise.all(
-        orderItems.map(i =>
-          Product.findByIdAndUpdate(i.product, { $inc: { stock: i.quantity, totalSold: -i.quantity } }),
-        ),
+      // Rollback du stock sur toute erreur survenue après deductStock
+      await inventoryService.restoreStock(
+        stockItems.map(i => ({ productId: i.productId, quantity: i.quantity })),
       );
       throw err;
     }
 
-    // 5. Mise à jour du coupon (post-création — non bloquant pour la transaction)
+    // 7. Enregistrement usage coupon
     if (appliedCoupon) {
-      appliedCoupon.usedCount += 1;
-      appliedCoupon.usedBy.push({ user: new mongoose.Types.ObjectId(userId), date: new Date() });
-      await appliedCoupon.save();
+      await couponService.recordUsage(appliedCoupon, userId);
     }
 
-    // 6. Email de confirmation (non bloquant)
+    // 8. Email de confirmation (non bloquant)
     this._sendConfirmationEmail(userId, order).catch(err =>
-      logger.warn('Email de confirmation non envoyé', { orderId: order._id, error: (err as Error).message }),
+      logger.warn('Email confirmation non envoyé', { orderId: order._id, error: (err as Error).message }),
     );
 
-    logger.info('Commande créée', { orderId: order._id, orderNumber: order.orderNumber, total });
+    logger.info('Commande créée', { orderId: order._id, orderNumber: order.orderNumber });
     return order;
   }
 
   /**
-   * Annule une commande et restitue le stock.
-   * Un client ne peut annuler que ses propres commandes en statut pending/confirmed.
-   *
-   * @param orderId - ID de la commande
-   * @param userId  - ID de l'utilisateur demandant l'annulation
+   * Annule une commande et restitue le stock via inventoryService.
+   * Révoque également l'usage du coupon si applicable.
    */
   async cancelOrder(orderId: string, userId: string): Promise<IOrder> {
     const order = await Order.findById(orderId);
     if (!order) throw ApiError.notFound('Commande non trouvée');
 
-    if (order.user.toString() !== userId) {
-      throw ApiError.forbidden('Accès non autorisé');
-    }
+    if (order.user.toString() !== userId) throw ApiError.forbidden('Accès non autorisé');
 
     if (!['pending', 'confirmed'].includes(order.status)) {
       throw ApiError.badRequest('Cette commande ne peut plus être annulée');
     }
 
     // Restitution du stock
-    for (const item of order.items) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: item.quantity, totalSold: -item.quantity },
-      });
+    await inventoryService.restoreStock(
+      order.items.map(i => ({ productId: String(i.product), quantity: i.quantity })),
+    );
+
+    // Révocation coupon
+    if (order.pricing.couponCode) {
+      await couponService.revokeUsage(order.pricing.couponCode, userId);
     }
 
     order.status = 'cancelled';
@@ -271,15 +212,9 @@ export class OrderService {
   }
 
   /**
-   * Récupère les commandes paginées d'un utilisateur.
-   *
-   * @param userId  - ID de l'utilisateur
-   * @param query   - Query string Express (page, limit)
+   * Historique paginé des commandes d'un utilisateur.
    */
-  async getUserOrders(
-    userId: string,
-    query: Record<string, unknown>,
-  ): Promise<PaginatedOrders> {
+  async getUserOrders(userId: string, query: Record<string, unknown>): Promise<PaginatedOrders> {
     const { page, limit } = getPagination(query);
     const filter = { user: userId };
 
@@ -293,16 +228,15 @@ export class OrderService {
     return { orders, pagination: getPaginationResult(total, { page, limit }) };
   }
 
-  /** Envoie l'email de confirmation — méthode interne non bloquante. */
   private async _sendConfirmationEmail(userId: string, order: IOrder): Promise<void> {
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select('email').lean();
     if (user?.email) {
-      const template = emailTemplates.orderConfirmation(
+      await emailService.sendOrderConfirmation(
+        user.email,
         order.orderNumber,
         order.pricing.total,
         order.items,
       );
-      await sendEmail({ to: user.email, ...template });
     }
   }
 }

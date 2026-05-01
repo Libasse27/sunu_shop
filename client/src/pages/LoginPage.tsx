@@ -35,8 +35,9 @@ export default function LoginPage() {
   const [searchParams] = useSearchParams();
   const { user, isLoading, error } = useSelector((state: RootState) => state.auth);
 
-  const from = (location.state as any)?.from?.pathname || '/';
-  const successMessage = (location.state as any)?.message as string | undefined;
+  const locationState = location.state as { from?: { pathname?: string }; message?: string } | null;
+  const from = locationState?.from?.pathname || '/';
+  const successMessage = locationState?.message;
   const oauthError = searchParams.get('error');
 
   const oauthErrorMsg = oauthError === 'google'

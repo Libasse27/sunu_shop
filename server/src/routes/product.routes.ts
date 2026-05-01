@@ -249,7 +249,7 @@ router.put('/admin/bulk-update', protect, adminOnly, bulkUpdateValidator, valida
 /**
  * @swagger
  * /products/admin/bulk-delete:
- *   delete:
+ *   post:
  *     summary: Suppression en masse (soft delete — isActive = false)
  *     tags: [Products]
  *     security:
@@ -269,7 +269,7 @@ router.put('/admin/bulk-update', protect, adminOnly, bulkUpdateValidator, valida
  *       200:
  *         description: Nombre de produits désactivés
  */
-router.delete('/admin/bulk-delete', protect, adminOnly, invalidateCacheMiddleware(PRODUCTS_CACHE), bulkDeleteProducts);
+router.post('/admin/bulk-delete', protect, adminOnly, invalidateCacheMiddleware(PRODUCTS_CACHE), bulkDeleteProducts);
 
 /**
  * @swagger

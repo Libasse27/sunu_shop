@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import { CLD } from '../../utils/cloudinary';
 
 interface Image {
   url: string;
@@ -31,7 +32,7 @@ export default function ProductImageGallery({ images, productName }: Props) {
         <AnimatePresence mode="wait">
           <motion.img
             key={activeIndex}
-            src={validImages[activeIndex].url}
+            src={CLD.detail(validImages[activeIndex].url)}
             alt={validImages[activeIndex].alt || productName}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -39,6 +40,7 @@ export default function ProductImageGallery({ images, productName }: Props) {
             transition={{ duration: 0.2 }}
             className="w-full h-full object-cover"
             style={{ transform: zoomed ? 'scale(1.5)' : 'scale(1)', cursor: zoomed ? 'zoom-out' : 'zoom-in' }}
+            loading="eager"
             onClick={() => setZoomed(!zoomed)}
           />
         </AnimatePresence>
@@ -88,7 +90,7 @@ export default function ProductImageGallery({ images, productName }: Props) {
                 background: 'transparent',
               }}
             >
-              <img src={img.url} alt={img.alt || `${productName} ${i + 1}`} className="w-full h-full object-cover" />
+              <img src={CLD.thumb(img.url)} alt={img.alt || `${productName} ${i + 1}`} className="w-full h-full object-cover" />
             </motion.button>
           ))}
         </div>

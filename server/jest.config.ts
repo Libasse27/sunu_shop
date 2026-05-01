@@ -4,9 +4,10 @@ const config: Config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.test.ts'],
-  setupFilesAfterFramework: ['<rootDir>/src/__tests__/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/(.*)$':      '<rootDir>/src/$1',
+    '^@shared/(.*)$': '<rootDir>/../shared/$1',
   },
   transform: {
     '^.+\\.ts$': ['ts-jest', {
@@ -20,6 +21,8 @@ const config: Config = {
   forceExit: true,
   detectOpenHandles: true,
   coverageDirectory: 'coverage',
+  // json-summary génère coverage/coverage-summary.json (lu par le Step Summary CI)
+  coverageReporters: ['json-summary', 'text', 'lcov'],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/server.ts',
@@ -30,10 +33,20 @@ const config: Config = {
   ],
   coverageThreshold: {
     global: {
-      branches: 60,
-      functions: 60,
-      lines: 60,
+      branches:   60,
+      functions:  60,
+      lines:      60,
       statements: 60,
+    },
+    // Modules critiques — seuil plus élevé
+    './src/services/pricing.service.ts': {
+      branches: 90, functions: 90, lines: 90, statements: 90,
+    },
+    './src/services/inventory.service.ts': {
+      branches: 90, functions: 90, lines: 90, statements: 90,
+    },
+    './src/services/coupon.service.ts': {
+      branches: 80, functions: 80, lines: 80, statements: 80,
     },
   },
 };

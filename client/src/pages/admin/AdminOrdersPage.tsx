@@ -1,40 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import {
-  Search, X, ClipboardList, Eye, Package, MapPin, CreditCard,
-  Clock, Download, Loader2,
-} from 'lucide-react';
+import { Search, ClipboardList, Download, Loader2 } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminEmptyState from '../../components/admin/AdminEmptyState';
 import { OrderStatusBadge, PaymentStatusBadge } from '../../components/admin/AdminStatusBadge';
+import { OrderDetailDrawer } from '../../components/admin/orders/OrderDetailDrawer';
+import type { OrderDetailType } from '../../components/admin/orders/OrderDetailDrawer';
 import { adminOrdersApi } from '../../services/admin.api';
 import { formatPrice } from '../../utils/formatPrice';
 import toast from 'react-hot-toast';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface OrderUser { firstName: string; lastName: string; email: string; phone?: string }
-interface OrderItem { name: string; image?: string; quantity: number; price: number; subtotal: number; variant?: { name: string; value: string } }
-interface OrderPricing { subtotal: number; shippingCost: number; discount: number; total: number; couponCode?: string }
-interface OrderShipping { trackingNumber?: string }
-interface OrderPayment { method: string; status: string; transactionId?: string; paidAt?: string }
-interface StatusHistoryItem { status: string; date: string; note?: string }
-interface Order {
-  _id: string;
-  orderNumber: string;
-  user?: OrderUser;
-  items: OrderItem[];
-  pricing: OrderPricing;
-  shipping?: OrderShipping;
-  shippingAddress?: { fullName: string; phone: string; street: string; city: string; region?: string; country: string; instructions?: string };
-  payment?: OrderPayment;
-  status: string;
-  statusHistory?: StatusHistoryItem[];
-  notes?: string;
-  customerNote?: string;
-  createdAt: string;
-}
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -60,7 +35,7 @@ const PAYMENT_LABELS: Record<string, string> = {
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderDetailType[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
@@ -69,7 +44,7 @@ export default function AdminOrdersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderDetailType | null>(null);
   const [trackingInput, setTrackingInput] = useState('');
   const [noteInput, setNoteInput] = useState('');
   const [savingTracking, setSavingTracking] = useState(false);
@@ -88,7 +63,7 @@ export default function AdminOrdersPage() {
         endDate: endDate || undefined,
       });
       setOrders(data.data || []);
-      setTotalPages(data.pagination?.pages || 1);
+      setTotalPages(data.pagination?.totalPages || 1);
       setTotal(data.pagination?.total || 0);
     } catch {
       toast.error('Erreur lors du chargement');
@@ -99,7 +74,7 @@ export default function AdminOrdersPage() {
 
   useEffect(() => { fetchOrders(); }, [page, statusFilter, search, startDate, endDate]);
 
-  const openDetail = (order: Order) => {
+  const openDetail = (order: OrderDetailType) => {
     setSelectedOrder(order);
     setTrackingInput(order.shipping?.trackingNumber || '');
     setNoteInput(order.notes || '');
@@ -195,8 +170,7 @@ export default function AdminOrdersPage() {
             <div className="relative" style={{ minWidth: 200 }}>
               <Search size={15} className="absolute text-gray-400" style={{ left: 10, top: '50%', transform: 'translateY(-50%)' }} />
               <input
-                type="text"
-                value={search}
+                type="text" value={search}
                 onChange={e => { setSearch(e.target.value); setPage(1); }}
                 className="w-full border border-gray-200 rounded-lg text-sm py-2 pr-3 focus:outline-none"
                 style={{ paddingLeft: 34 }}
@@ -211,15 +185,11 @@ export default function AdminOrdersPage() {
               <option value="">Tous les statuts</option>
               {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
-            <input
-              type="date"
-              value={startDate}
+            <input type="date" value={startDate}
               onChange={e => { setStartDate(e.target.value); setPage(1); }}
               className="border border-gray-200 rounded-lg text-sm py-2 px-3 bg-white focus:outline-none"
             />
-            <input
-              type="date"
-              value={endDate}
+            <input type="date" value={endDate}
               onChange={e => { setEndDate(e.target.value); setPage(1); }}
               className="border border-gray-200 rounded-lg text-sm py-2 px-3 bg-white focus:outline-none"
             />
@@ -250,14 +220,9 @@ export default function AdminOrdersPage() {
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">N° Commande</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Client</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Paiement</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Modifier</th>
-                      <th className="px-4 py-3"></th>
+                      {['N° Commande', 'Client', 'Date', 'Total', 'Paiement', 'Statut', 'Modifier', ''].map(h => (
+                        <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
@@ -280,13 +245,13 @@ export default function AdminOrdersPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex flex-col gap-1">
-                            <span className="text-xs text-gray-500">{order.payment?.method ? (PAYMENT_LABELS[order.payment.method] || order.payment.method) : '—'}</span>
+                            <span className="text-xs text-gray-500">
+                              {order.payment?.method ? (PAYMENT_LABELS[order.payment.method] || order.payment.method) : '—'}
+                            </span>
                             <PaymentStatusBadge status={order.payment?.status || ''} />
                           </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <OrderStatusBadge status={order.status} />
-                        </td>
+                        <td className="px-4 py-3"><OrderStatusBadge status={order.status} /></td>
                         <td className="px-4 py-3">
                           <select
                             value={order.status}
@@ -303,7 +268,7 @@ export default function AdminOrdersPage() {
                             style={{ backgroundColor: 'rgba(0,154,68,0.1)', color: '#009A44' }}
                             title="Voir le détail"
                           >
-                            <Eye size={15} />
+                            <Search size={15} />
                           </button>
                         </td>
                       </tr>
@@ -313,7 +278,6 @@ export default function AdminOrdersPage() {
               </div>
             )}
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
                 <button
@@ -336,243 +300,20 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
-        {/* ─── Panneau de détail (drawer custom sans Headless UI) ─────────────── */}
         {selectedOrder && (
-          <div className="fixed inset-0" style={{ zIndex: 60 }}>
-            {/* Overlay */}
-            <div
-              className="absolute inset-0"
-              style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-              onClick={() => setSelectedOrder(null)}
-            />
-            {/* Panel */}
-            <div
-              className="absolute top-0 right-0 bottom-0 bg-white shadow-2xl flex flex-col overflow-hidden"
-              style={{ width: '100%', maxWidth: 576 }}
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b bg-white shrink-0">
-                <div>
-                  <h2 className="font-bold text-gray-900 text-base mb-0">{selectedOrder.orderNumber}</h2>
-                  <p className="text-sm text-gray-500 mb-0 mt-0.5">
-                    {new Date(selectedOrder.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
-                <button onClick={() => setSelectedOrder(null)} className="p-2 rounded-lg border-0 bg-gray-100 text-gray-500 hover:bg-gray-200 cursor-pointer">
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
-                {/* Statut */}
-                <div className="flex items-center justify-between rounded-xl p-4 bg-gray-50">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Statut actuel</p>
-                    <OrderStatusBadge status={selectedOrder.status} />
-                  </div>
-                  <select
-                    value={selectedOrder.status}
-                    onChange={e => updateStatus(selectedOrder._id, e.target.value)}
-                    className="border border-gray-200 rounded-lg text-sm py-2 px-3 bg-white focus:outline-none"
-                  >
-                    {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                  </select>
-                </div>
-
-                {/* Client */}
-                <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <Package size={14} /> Client
-                  </h4>
-                  <div className="rounded-xl p-4 bg-gray-50">
-                    <p className="font-semibold text-gray-900 mb-0">{selectedOrder.user?.firstName} {selectedOrder.user?.lastName}</p>
-                    <p className="text-sm text-gray-500 mb-0">{selectedOrder.user?.email}</p>
-                    {selectedOrder.user?.phone && <p className="text-sm text-gray-500 mb-0">{selectedOrder.user.phone}</p>}
-                  </div>
-                </div>
-
-                {/* Articles */}
-                <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                    Articles ({selectedOrder.items?.length})
-                  </h4>
-                  <div className="flex flex-col gap-2">
-                    {selectedOrder.items?.map((item, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
-                        {item.image && (
-                          <img src={item.image} alt={item.name} className="rounded-lg object-cover shrink-0" style={{ width: 44, height: 44 }} />
-                        )}
-                        <div className="flex-1" style={{ minWidth: 0 }}>
-                          <p className="text-sm font-medium text-gray-900 mb-0 truncate">{item.name}</p>
-                          {item.variant && <p className="text-xs text-gray-500 mb-0">{item.variant.name}: {item.variant.value}</p>}
-                          <p className="text-xs text-gray-500 mb-0">{item.quantity} × {formatPrice(item.price)}</p>
-                        </div>
-                        <p className="font-bold text-gray-900 shrink-0 mb-0 text-sm">{formatPrice(item.subtotal)}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Récapitulatif */}
-                <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Récapitulatif</h4>
-                  <div className="rounded-xl p-4 bg-gray-50 flex flex-col gap-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Sous-total</span>
-                      <span>{formatPrice(selectedOrder.pricing?.subtotal || 0)}</span>
-                    </div>
-                    {(selectedOrder.pricing?.shippingCost || 0) > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Livraison</span>
-                        <span>{formatPrice(selectedOrder.pricing.shippingCost)}</span>
-                      </div>
-                    )}
-                    {(selectedOrder.pricing?.discount || 0) > 0 && (
-                      <div className="flex justify-between" style={{ color: '#009A44' }}>
-                        <span>
-                          Réduction
-                          {selectedOrder.pricing?.couponCode && (
-                            <code className="ml-1 text-xs px-1 rounded" style={{ backgroundColor: 'rgba(0,154,68,0.1)', fontSize: 11 }}>
-                              {selectedOrder.pricing.couponCode}
-                            </code>
-                          )}
-                        </span>
-                        <span>−{formatPrice(selectedOrder.pricing.discount)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between font-bold pt-2 border-t">
-                      <span>Total</span>
-                      <span>{formatPrice(selectedOrder.pricing?.total || 0)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Adresse */}
-                {selectedOrder.shippingAddress && (
-                  <div>
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                      <MapPin size={14} /> Adresse de livraison
-                    </h4>
-                    <div className="rounded-xl p-4 bg-gray-50 text-sm text-gray-600 flex flex-col gap-0.5">
-                      <p className="font-semibold text-gray-900 mb-0">{selectedOrder.shippingAddress.fullName}</p>
-                      <p className="mb-0">{selectedOrder.shippingAddress.phone}</p>
-                      <p className="mb-0">{selectedOrder.shippingAddress.street}</p>
-                      <p className="mb-0">{selectedOrder.shippingAddress.city}{selectedOrder.shippingAddress.region && `, ${selectedOrder.shippingAddress.region}`}</p>
-                      <p className="mb-0">{selectedOrder.shippingAddress.country}</p>
-                      {selectedOrder.shippingAddress.instructions && (
-                        <p className="mt-1 italic mb-0">"{selectedOrder.shippingAddress.instructions}"</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Paiement */}
-                {selectedOrder.payment && (
-                  <div>
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                      <CreditCard size={14} /> Paiement
-                    </h4>
-                    <div className="rounded-xl p-4 bg-gray-50 text-sm flex flex-col gap-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Méthode</span>
-                        <span className="font-medium">{PAYMENT_LABELS[selectedOrder.payment.method] || selectedOrder.payment.method}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500">Statut</span>
-                        <PaymentStatusBadge status={selectedOrder.payment.status} />
-                      </div>
-                      {selectedOrder.payment.transactionId && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Transaction</span>
-                          <code style={{ fontSize: 11 }}>{selectedOrder.payment.transactionId}</code>
-                        </div>
-                      )}
-                      {selectedOrder.payment.paidAt && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Payé le</span>
-                          <span>{new Date(selectedOrder.payment.paidAt).toLocaleDateString('fr-FR')}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Numéro de suivi */}
-                <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Numéro de suivi</h4>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={trackingInput}
-                      onChange={e => setTrackingInput(e.target.value)}
-                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
-                      placeholder="Ex: DHL-1234567890"
-                    />
-                    <button
-                      onClick={saveTracking}
-                      disabled={savingTracking}
-                      className="px-4 py-2 text-sm text-white rounded-lg border-0 shrink-0 disabled:opacity-60 flex items-center gap-2"
-                      style={{ backgroundColor: '#009A44' }}
-                    >
-                      {savingTracking && <Loader2 size={14} className="animate-spin" />}
-                      Sauvegarder
-                    </button>
-                  </div>
-                </div>
-
-                {/* Historique */}
-                {(selectedOrder.statusHistory?.length || 0) > 0 && (
-                  <div>
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                      <Clock size={14} /> Historique
-                    </h4>
-                    <div className="flex flex-col gap-2">
-                      {[...(selectedOrder.statusHistory || [])].reverse().map((h, i) => (
-                        <div key={i} className="flex items-start gap-3 text-sm">
-                          <div className="rounded-full shrink-0 mt-1.5" style={{ width: 8, height: 8, backgroundColor: '#009A44' }} />
-                          <div>
-                            <OrderStatusBadge status={h.status} />
-                            <p className="text-xs text-gray-500 mt-1 mb-0">
-                              {new Date(h.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                            {h.note && <p className="text-xs text-gray-500 mt-0.5 mb-0 italic">"{h.note}"</p>}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Note admin */}
-                <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Note interne</h4>
-                  <textarea
-                    value={noteInput}
-                    onChange={e => setNoteInput(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
-                    rows={3}
-                    placeholder="Note visible uniquement par l'équipe admin..."
-                  />
-                  <button
-                    onClick={saveNote}
-                    disabled={savingNote}
-                    className="mt-2 px-4 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 flex items-center gap-2 disabled:opacity-60"
-                  >
-                    {savingNote && <Loader2 size={13} className="animate-spin" />}
-                    Enregistrer la note
-                  </button>
-                </div>
-
-                {/* Message client */}
-                {selectedOrder.customerNote && (
-                  <div className="rounded-xl p-4 border" style={{ backgroundColor: 'rgba(0,154,68,0.07)', borderColor: 'rgba(0,154,68,0.2)' }}>
-                    <p className="text-sm font-semibold mb-1" style={{ color: '#009A44' }}>Message du client</p>
-                    <p className="text-sm italic mb-0" style={{ color: '#003D1C' }}>"{selectedOrder.customerNote}"</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <OrderDetailDrawer
+            order={selectedOrder}
+            trackingInput={trackingInput}
+            noteInput={noteInput}
+            savingTracking={savingTracking}
+            savingNote={savingNote}
+            onClose={() => setSelectedOrder(null)}
+            onStatusChange={updateStatus}
+            onTrackingChange={setTrackingInput}
+            onNoteChange={setNoteInput}
+            onSaveTracking={saveTracking}
+            onSaveNote={saveNote}
+          />
         )}
       </AdminLayout>
     </>

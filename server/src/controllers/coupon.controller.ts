@@ -4,36 +4,27 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { getPagination, getPaginationResult } from '../utils/pagination';
+import { couponService } from '../services/coupon.service';
 
 export const validateCoupon = asyncHandler(async (req: Request, res: Response) => {
   const { code, orderTotal } = req.body;
-  const coupon = await Coupon.findOne({ code: code.toUpperCase(), isActive: true });
+  if (!code || orderTotal === undefined) throw ApiError.badRequest('Code et montant requis');
 
-  if (!coupon) throw ApiError.notFound('Code promo invalide');
-  if (new Date() < coupon.startDate || new Date() > coupon.endDate) {
-    throw ApiError.badRequest('Code promo expiré');
-  }
-  if (coupon.maxUsage && coupon.usedCount >= coupon.maxUsage) {
-    throw ApiError.badRequest('Code promo épuisé');
-  }
-  if (orderTotal < coupon.minOrderAmount) {
-    throw ApiError.badRequest(`Montant minimum de commande : ${coupon.minOrderAmount} FCFA`);
-  }
+  const result = await couponService.validateCoupon(
+    String(code),
+    String(req.user!._id),
+    Number(orderTotal),
+  );
 
-  const userUsage = coupon.usedBy.filter(u => u.user.toString() === req.user!._id.toString()).length;
-  if (userUsage >= coupon.maxUsagePerUser) {
-    throw ApiError.badRequest('Vous avez déjà utilisé ce code promo');
-  }
+  if (!result.valid) throw ApiError.badRequest(result.reason ?? 'Code promo invalide');
 
-  let discount = 0;
-  if (coupon.type === 'percentage') {
-    discount = (orderTotal * coupon.value) / 100;
-    if (coupon.maxDiscount) discount = Math.min(discount, coupon.maxDiscount);
-  } else if (coupon.type === 'fixed_amount') {
-    discount = coupon.value;
-  }
-
-  ApiResponse.success(res, { code: coupon.code, type: coupon.type, discount, description: coupon.description });
+  ApiResponse.success(res, {
+    code:        result.coupon!.code,
+    type:        result.coupon!.type,
+    discount:    result.discount,
+    label:       result.label,
+    description: result.coupon!.description,
+  });
 });
 
 // Admin
@@ -58,4 +49,10 @@ export const updateCoupon = asyncHandler(async (req: Request, res: Response) => 
 export const deleteCoupon = asyncHandler(async (req: Request, res: Response) => {
   await Coupon.findByIdAndDelete(req.params.id);
   ApiResponse.success(res, null, 'Coupon supprimé');
+});
+
+// Admin — statistiques d'utilisation d'un coupon
+export const getCouponStats = asyncHandler(async (req: Request, res: Response) => {
+  const stats = await couponService.getCouponStats(req.params.id);
+  ApiResponse.success(res, stats);
 });

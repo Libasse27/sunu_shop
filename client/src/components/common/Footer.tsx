@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter, MessageCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { SITE_NAME, WHATSAPP_NUMBER } from '../../utils/constants';
 import api from '../../services/api';
+import { getApiError } from '../../utils/getApiError';
 
 export default function Footer() {
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=Bonjour TechAfrique, j'ai une question.`;
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=Bonjour Sunu Shop, j'ai une question.`;
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -20,8 +21,8 @@ export default function Footer() {
       await api.post('/newsletter/subscribe', { email });
       setSuccess(true);
       setEmail('');
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Une erreur est survenue');
+    } catch (err: unknown) {
+      setError(getApiError(err, 'Une erreur est survenue'));
     } finally {
       setLoading(false);
     }
@@ -87,7 +88,7 @@ export default function Footer() {
               {/* Brand */}
               <div>
                 <div className="flex items-center gap-2 mb-6">
-                  <img src="/logo.svg" alt="TechAfrique" className="rounded-lg" style={{ height: '2.75rem', width: 'auto', maxWidth: '11rem' }} />
+                  <img src="/logo.svg" alt="Sunu Shop" className="rounded-lg" style={{ height: '2.75rem', width: 'auto', maxWidth: '11rem' }} />
                 </div>
                 <p className="text-gray-500 text-sm leading-relaxed mb-6">
                   Votre partenaire tech en Afrique de l'Ouest. Informatique, téléphonie, électronique et services de réparation.

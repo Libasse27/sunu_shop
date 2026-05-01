@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Monitor, Globe, Award, Users, Wrench, Shield, CheckCircle, ArrowRight, MapPin, MessageCircle } from 'lucide-react';
-import { WHATSAPP_NUMBER } from '../utils/constants';
+import { WHATSAPP_NUMBER, SITE_URL } from '../utils/constants';
 
 const stats = [
   { icon: Monitor, label: 'Produits',  value: '500+',   desc: 'Informatique, téléphonie, électronique',   accent: '#009A44' },
@@ -24,11 +24,23 @@ const countries = [
 ];
 
 export default function AboutPage() {
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=Bonjour TechAfrique, je souhaite en savoir plus sur vos services.`;
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=Bonjour Sunu Shop, je souhaite en savoir plus sur vos services.`;
 
   return (
     <>
-      <Helmet><title>À propos — TechAfrique</title></Helmet>
+      <Helmet>
+        <title>À propos — Sunu Shop</title>
+        <meta name="description" content="Sunu Shop, votre boutique tech de confiance à Dakar depuis 2020. Matériel informatique, smartphones et services réparation. Authenticité garantie, paiement mobile." />
+        <link rel="canonical" href={`${SITE_URL}/a-propos`} />
+        <meta property="og:type"        content="website" />
+        <meta property="og:site_name"   content="Sunu Shop" />
+        <meta property="og:title"       content="À propos de Sunu Shop" />
+        <meta property="og:description" content="Votre partenaire tech en Afrique de l'Ouest. Authenticité, expertise et service client de qualité." />
+        <meta property="og:url"         content={`${SITE_URL}/a-propos`} />
+        <meta name="twitter:card"  content="summary" />
+        <meta name="twitter:site"  content="@sunushop" />
+        <meta name="twitter:title" content="À propos — Sunu Shop" />
+      </Helmet>
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden py-12" style={{ backgroundColor: '#003D1C' }}>
@@ -51,7 +63,7 @@ export default function AboutPage() {
             Notre Histoire
           </h1>
           <p className="text-white mx-auto leading-relaxed" style={{ opacity: 0.65, fontSize: '1.1rem', maxWidth: 600 }}>
-            TechAfrique est né de la volonté de démocratiser l'accès aux technologies de qualité
+            Sunu Shop est né de la volonté de démocratiser l'accès aux technologies de qualité
             pour les populations d'Afrique de l'Ouest.
           </p>
         </div>
@@ -94,7 +106,7 @@ export default function AboutPage() {
               <div style={{ height: 1, flex: 1, background: 'linear-gradient(to left, transparent, rgba(0,154,68,0.30))' }} />
             </div>
             <p className="text-gray-500 leading-relaxed mb-4">
-              Chez TechAfrique, nous croyons que chaque Africain mérite d'avoir accès aux meilleures
+              Chez Sunu Shop, nous croyons que chaque Africain mérite d'avoir accès aux meilleures
               technologies à des prix justes. Nous sélectionnons rigoureusement nos produits auprès des
               meilleurs fournisseurs — <strong className="text-gray-900">Samsung, Apple, HP, Asus, Xiaomi</strong> —
               pour vous garantir authenticité et qualité.
@@ -159,7 +171,7 @@ export default function AboutPage() {
             Pourquoi nous choisir
           </span>
           <h2 className="font-bold text-white text-3xl mb-6">
-            La différence TechAfrique
+            La différence Sunu Shop
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mx-auto text-left mb-10" style={{ maxWidth: 900 }}>
             {[

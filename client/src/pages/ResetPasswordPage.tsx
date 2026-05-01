@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Eye, EyeOff, Lock, CheckCircle } from 'lucide-react';
 import api from '../services/api';
+import { getApiError } from '../utils/getApiError';
 
 function getPasswordStrength(password: string): { level: number; label: string; color: string } {
   if (!password) return { level: 0, label: '', color: '#e5e7eb' };
@@ -61,8 +62,8 @@ export default function ResetPasswordPage() {
       setTimeout(() => {
         navigate('/connexion', { state: { message: 'Mot de passe réinitialisé avec succès !' } });
       }, 2500);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Lien invalide ou expiré. Veuillez demander un nouveau lien.');
+    } catch (err: unknown) {
+      setError(getApiError(err, 'Lien invalide ou expiré. Veuillez demander un nouveau lien.'));
     } finally {
       setLoading(false);
     }

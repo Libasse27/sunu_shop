@@ -8,27 +8,74 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 // Évite les forgeries de tokens JWT en production par un secret connu.
 function requireProductionSecrets(nodeEnv: string | undefined) {
   if (nodeEnv !== 'production') return;
-  const defaults = [
+
+  const errors: string[] = [];
+
+  // JWT
+  const jwtDefaults = [
     'dev-access-secret-change-in-production',
     'dev-refresh-secret-change-in-production',
   ];
   const accessSecret = process.env.JWT_ACCESS_SECRET || '';
   const refreshSecret = process.env.JWT_REFRESH_SECRET || '';
-  if (defaults.includes(accessSecret) || !accessSecret) {
-    throw new Error('[FATAL] JWT_ACCESS_SECRET doit être défini et sécurisé en production');
+  if (!accessSecret || jwtDefaults.includes(accessSecret)) {
+    errors.push('JWT_ACCESS_SECRET doit être défini et sécurisé');
   }
-  if (defaults.includes(refreshSecret) || !refreshSecret) {
-    throw new Error('[FATAL] JWT_REFRESH_SECRET doit être défini et sécurisé en production');
+  if (!refreshSecret || jwtDefaults.includes(refreshSecret)) {
+    errors.push('JWT_REFRESH_SECRET doit être défini et sécurisé');
   }
 
-  // Vérification des secrets monitoring — valeurs par défaut inacceptables en prod
+  // Monitoring
   const metricsSecret = process.env.METRICS_SECRET;
   if (!metricsSecret || metricsSecret === 'dev-metrics-secret') {
-    throw new Error('[FATAL] METRICS_SECRET must be set and not be the default value in production');
+    errors.push('METRICS_SECRET doit être défini et différent de la valeur par défaut');
   }
   const grafanaPassword = process.env.GRAFANA_PASSWORD;
   if (!grafanaPassword || grafanaPassword === 'admin') {
-    throw new Error('[FATAL] GRAFANA_PASSWORD must be changed from default in production');
+    errors.push('GRAFANA_PASSWORD doit être changé depuis la valeur par défaut');
+  }
+
+  // MongoDB
+  if (!process.env.MONGODB_URI) {
+    errors.push('MONGODB_URI est requis');
+  }
+
+  // Cloudinary — requis pour les uploads produits
+  if (!process.env.CLOUDINARY_CLOUD_NAME) errors.push('CLOUDINARY_CLOUD_NAME est requis');
+  if (!process.env.CLOUDINARY_API_KEY)    errors.push('CLOUDINARY_API_KEY est requis');
+  if (!process.env.CLOUDINARY_API_SECRET) errors.push('CLOUDINARY_API_SECRET est requis');
+
+  // SMTP — requis pour les emails transactionnels
+  if (!process.env.SMTP_USER) errors.push('SMTP_USER est requis');
+  if (!process.env.SMTP_PASS) errors.push('SMTP_PASS est requis');
+
+  // Stripe — seulement si la clé est partiellement renseignée (incohérence de config)
+  const stripeKey = process.env.STRIPE_SECRET_KEY || '';
+  if (stripeKey && !process.env.STRIPE_WEBHOOK_SECRET) {
+    errors.push('STRIPE_WEBHOOK_SECRET est requis quand STRIPE_SECRET_KEY est défini');
+  }
+
+  // Wave — seulement si la clé est partiellement renseignée
+  const waveKey = process.env.WAVE_API_KEY || '';
+  if (waveKey && !process.env.WAVE_WEBHOOK_SECRET) {
+    errors.push('WAVE_WEBHOOK_SECRET est requis quand WAVE_API_KEY est défini');
+  }
+
+  // Orange Money — les trois clés doivent être présentes ensemble
+  const omKeys = [
+    process.env.ORANGE_MONEY_CLIENT_ID,
+    process.env.ORANGE_MONEY_CLIENT_SECRET,
+    process.env.ORANGE_MONEY_MERCHANT_KEY,
+  ];
+  const omDefined = omKeys.filter(Boolean).length;
+  if (omDefined > 0 && omDefined < 3) {
+    errors.push('ORANGE_MONEY_CLIENT_ID, ORANGE_MONEY_CLIENT_SECRET et ORANGE_MONEY_MERCHANT_KEY doivent être tous définis ensemble');
+  }
+
+  if (errors.length > 0) {
+    throw new Error(
+      `[FATAL] Configuration de production invalide :\n${errors.map(e => `  • ${e}`).join('\n')}`
+    );
   }
 }
 
@@ -60,8 +107,8 @@ export const env = {
   SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
   SMTP_USER: process.env.SMTP_USER || '',
   SMTP_PASS: process.env.SMTP_PASS || '',
-  EMAIL_FROM: process.env.EMAIL_FROM || 'noreply@techafrique.sn',
-  EMAIL_FROM_NAME: process.env.EMAIL_FROM_NAME || 'TechAfrique',
+  EMAIL_FROM: process.env.EMAIL_FROM || 'noreply@sunushop.sn',
+  EMAIL_FROM_NAME: process.env.EMAIL_FROM_NAME || 'SunuShop',
 
   ORANGE_MONEY_CLIENT_ID: process.env.ORANGE_MONEY_CLIENT_ID || '',
   ORANGE_MONEY_CLIENT_SECRET: process.env.ORANGE_MONEY_CLIENT_SECRET || '',

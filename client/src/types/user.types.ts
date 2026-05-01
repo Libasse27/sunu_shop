@@ -1,23 +1,7 @@
-export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  avatar?: string;
-  role: 'client' | 'admin' | 'superadmin';
-  isVerified: boolean;
-}
+// Source de vérité : shared/types/user.types.ts
+// Ce fichier ré-exporte pour que les imports client restent stables.
+export type { IUser, IAddress, UserRole } from '@shared/types/user.types';
 
-export interface Address {
-  _id: string;
-  fullName: string;
-  phone: string;
-  street: string;
-  city: string;
-  region?: string;
-  country: string;
-  postalCode?: string;
-  isDefault: boolean;
-  label: 'domicile' | 'bureau' | 'autre';
-}
+// Alias locaux pour compatibilité avec le code existant
+export type { IUser as User } from '@shared/types/user.types';
+export type { IAddress as Address } from '@shared/types/user.types';

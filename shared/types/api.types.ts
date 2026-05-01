@@ -1,16 +1,17 @@
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data?: T;
-  errors?: any[];
+  errors?: Array<{ field?: string; message: string }>;
   pagination?: PaginationInfo;
 }
 
+/** Aligné avec PaginationResult de server/src/utils/pagination.ts */
 export interface PaginationInfo {
   page: number;
   limit: number;
   total: number;
-  pages: number;
+  totalPages: number;  // anciennement "pages" — renommé pour cohérence avec l'API
   hasNext: boolean;
   hasPrev: boolean;
 }

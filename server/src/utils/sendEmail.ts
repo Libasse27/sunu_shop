@@ -5,15 +5,17 @@ interface EmailOptions {
   subject: string;
   html: string;
   text?: string;
+  replyTo?: string;
 }
 
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
   const mailOptions = {
-    from: emailDefaults.from,
-    to: options.to,
+    from:    emailDefaults.from,
+    to:      options.to,
     subject: options.subject,
-    html: options.html,
-    text: options.text,
+    html:    options.html,
+    text:    options.text,
+    ...(options.replyTo ? { replyTo: options.replyTo } : {}),
   };
 
   await transporter.sendMail(mailOptions);
@@ -48,7 +50,7 @@ const layout = (content: string, previewText: string = ''): string => `
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TechAfrique</title>
+  <title>SunuShop</title>
   <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
 </head>
 <body style="margin:0;padding:0;background:${BG};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:${DARK};">
@@ -67,7 +69,7 @@ const layout = (content: string, previewText: string = ''): string => `
                     <span style="font-size:22px;font-weight:800;color:${PRIMARY};letter-spacing:-0.5px;">T</span><span style="font-size:22px;font-weight:800;color:${DARK};letter-spacing:-0.5px;">A</span>
                   </td>
                   <td style="padding-left:12px;">
-                    <span style="font-size:20px;font-weight:700;color:white;letter-spacing:-0.3px;">TechAfrique</span>
+                    <span style="font-size:20px;font-weight:700;color:white;letter-spacing:-0.3px;">SunuShop</span>
                   </td>
                 </tr>
               </table>
@@ -85,10 +87,10 @@ const layout = (content: string, previewText: string = ''): string => `
           <tr>
             <td style="background:${DARK};border-radius:0 0 12px 12px;padding:24px 32px;text-align:center;">
               <p style="color:#94A3B8;font-size:12px;margin:0 0 8px;">
-                © ${new Date().getFullYear()} TechAfrique · Dakar, Sénégal
+                © ${new Date().getFullYear()} SunuShop · Dakar, Sénégal
               </p>
               <p style="color:#64748B;font-size:11px;margin:0;">
-                Vous recevez cet email car vous avez un compte TechAfrique.
+                Vous recevez cet email car vous avez un compte SunuShop.
               </p>
             </td>
           </tr>
@@ -104,14 +106,14 @@ const layout = (content: string, previewText: string = ''): string => `
 // ─── Templates ────────────────────────────────────────────────────────────────
 export const emailTemplates = {
 
-  welcome: (name: string, shopUrl: string = 'https://techafrique.sn/boutique') => ({
-    subject: '🎉 Bienvenue sur TechAfrique !',
+  welcome: (name: string, shopUrl: string = 'https://sunushop.sn/boutique') => ({
+    subject: '🎉 Bienvenue sur SunuShop !',
     html: layout(`
       <h2 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${DARK};">
         Bienvenue, ${name} ! 👋
       </h2>
       <p style="margin:0 0 16px;color:${MUTED};line-height:1.6;">
-        Merci de nous avoir rejoint. Votre compte TechAfrique est maintenant actif et prêt à l'emploi.
+        Merci de nous avoir rejoint. Votre compte SunuShop est maintenant actif et prêt à l'emploi.
       </p>
       <div style="background:${BG};border-radius:8px;padding:20px 24px;margin-bottom:24px;">
         <p style="margin:0 0 12px;font-weight:600;color:${DARK};">Ce que vous pouvez faire :</p>
@@ -126,7 +128,7 @@ export const emailTemplates = {
         Des questions ? Notre équipe est disponible sur WhatsApp pour vous aider.
       </p>
       ${btn('Découvrir la boutique', shopUrl)}
-    `, `Bienvenue sur TechAfrique, ${name} !`),
+    `, `Bienvenue sur SunuShop, ${name} !`),
   }),
 
   orderConfirmation: (
@@ -144,7 +146,7 @@ export const emailTemplates = {
       cash_on_delivery: 'Paiement à la livraison',
     };
     return {
-      subject: `✅ Commande ${orderNumber} confirmée — TechAfrique`,
+      subject: `✅ Commande ${orderNumber} confirmée — SunuShop`,
       html: layout(`
         <div style="text-align:center;margin-bottom:28px;">
           <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:#DCFCE7;border-radius:50%;margin-bottom:12px;">
@@ -201,12 +203,12 @@ export const emailTemplates = {
   },
 
   resetPassword: (name: string, resetUrl: string) => ({
-    subject: '🔒 Réinitialisation de votre mot de passe — TechAfrique',
+    subject: '🔒 Réinitialisation de votre mot de passe — SunuShop',
     html: layout(`
       <h2 style="margin:0 0 12px;font-size:22px;font-weight:700;color:${DARK};">Réinitialisation du mot de passe</h2>
       <p style="margin:0 0 16px;color:${MUTED};line-height:1.6;">Bonjour <strong>${name}</strong>,</p>
       <p style="margin:0 0 20px;color:${MUTED};line-height:1.6;">
-        Nous avons reçu une demande de réinitialisation du mot de passe pour votre compte TechAfrique.
+        Nous avons reçu une demande de réinitialisation du mot de passe pour votre compte SunuShop.
         Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.
       </p>
       ${btn('Réinitialiser le mot de passe', resetUrl)}
@@ -216,7 +218,7 @@ export const emailTemplates = {
           ⚠️ Ce lien expire dans <strong>1 heure</strong>. Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email — votre mot de passe reste inchangé.
         </p>
       </div>
-    `, 'Réinitialisez votre mot de passe TechAfrique'),
+    `, 'Réinitialisez votre mot de passe SunuShop'),
   }),
 
   orderStatusUpdate: (
@@ -364,24 +366,24 @@ export const emailTemplates = {
     `, `Remboursement de ${formatFcfa(amount)} pour la commande ${orderNumber}`),
   }),
 
-  passwordChanged: (name: string, supportEmail: string = 'contact@techafrique.sn') => ({
-    subject: '🔐 Mot de passe modifié — TechAfrique',
+  passwordChanged: (name: string, supportEmail: string = 'contact@sunushop.sn') => ({
+    subject: '🔐 Mot de passe modifié — SunuShop',
     html: layout(`
       <h2 style="margin:0 0 12px;font-size:22px;font-weight:700;color:${DARK};">Mot de passe modifié</h2>
       <p style="margin:0 0 16px;color:${MUTED};line-height:1.6;">Bonjour <strong>${name}</strong>,</p>
       <p style="margin:0 0 20px;color:${MUTED};line-height:1.6;">
-        Le mot de passe de votre compte TechAfrique a été modifié avec succès le <strong>${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>.
+        Le mot de passe de votre compte SunuShop a été modifié avec succès le <strong>${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>.
       </p>
       <div style="background:#FEE2E2;border-radius:8px;padding:14px 16px;margin-bottom:20px;">
         <p style="margin:0;font-size:13px;color:#991B1B;">
           🚨 Si vous n'êtes pas à l'origine de cette modification, contactez immédiatement notre support à <a href="mailto:${supportEmail}" style="color:#DC2626;">${supportEmail}</a>
         </p>
       </div>
-    `, 'Votre mot de passe TechAfrique a été modifié'),
+    `, 'Votre mot de passe SunuShop a été modifié'),
   }),
 
   newsletterWelcome: (email: string, shopUrl: string, unsubscribeUrl: string) => ({
-    subject: '📬 Bienvenue dans la newsletter TechAfrique !',
+    subject: '📬 Bienvenue dans la newsletter SunuShop !',
     html: layout(`
       <!-- Pan-African strip -->
       <div style="display:flex;height:4px;margin-bottom:24px;border-radius:4px;overflow:hidden;">
@@ -394,7 +396,7 @@ export const emailTemplates = {
         Merci pour votre inscription ! 🎉
       </h2>
       <p style="margin:0 0 16px;color:${MUTED};line-height:1.6;">
-        L'adresse <strong>${email}</strong> est maintenant inscrite à la newsletter TechAfrique.
+        L'adresse <strong>${email}</strong> est maintenant inscrite à la newsletter SunuShop.
       </p>
       <div style="background:${BG};border-radius:8px;padding:16px 20px;margin-bottom:24px;">
         <p style="margin:0 0 10px;font-weight:600;color:${DARK};">Ce que vous allez recevoir :</p>
@@ -402,7 +404,7 @@ export const emailTemplates = {
           <li>Promotions exclusives et ventes flash</li>
           <li>Nouveaux produits tech et électronique</li>
           <li>Conseils d'experts et guides d'achat</li>
-          <li>Actualités TechAfrique</li>
+          <li>Actualités SunuShop</li>
         </ul>
       </div>
 
@@ -413,10 +415,10 @@ export const emailTemplates = {
       ${divider()}
 
       <p style="font-size:11px;color:${MUTED};text-align:center;margin:0;">
-        Vous recevez cet email car vous venez de vous inscrire à la newsletter TechAfrique.<br/>
+        Vous recevez cet email car vous venez de vous inscrire à la newsletter SunuShop.<br/>
         <a href="${unsubscribeUrl}" style="color:${MUTED};text-decoration:underline;">Se désinscrire</a>
       </p>
-    `, 'Bienvenue dans la newsletter TechAfrique !'),
+    `, 'Bienvenue dans la newsletter SunuShop !'),
   }),
 
   newsletterBroadcast: (subject: string, body: string, shopUrl: string, unsubscribeUrl: string) => ({
@@ -440,7 +442,7 @@ export const emailTemplates = {
       ${divider()}
 
       <p style="font-size:11px;color:${MUTED};text-align:center;margin:0;">
-        Vous recevez cet email car vous êtes abonné(e) à la newsletter TechAfrique.<br/>
+        Vous recevez cet email car vous êtes abonné(e) à la newsletter SunuShop.<br/>
         <a href="${unsubscribeUrl}" style="color:${MUTED};text-decoration:underline;">Se désinscrire</a>
       </p>
     `, subject),
@@ -457,16 +459,16 @@ export const emailTemplates = {
       <h2 style="margin:0 0 12px;font-size:22px;font-weight:700;color:${DARK};">Réponse à votre avis</h2>
       <p style="margin:0 0 16px;color:${MUTED};line-height:1.6;">Bonjour <strong>${customerName}</strong>,</p>
       <p style="margin:0 0 16px;color:${MUTED};line-height:1.6;">
-        L'équipe TechAfrique a répondu à votre avis sur <strong style="color:${DARK};">${productName}</strong> :
+        L'équipe SunuShop a répondu à votre avis sur <strong style="color:${DARK};">${productName}</strong> :
       </p>
       <div style="background:${BG};border-left:4px solid ${PRIMARY};border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:20px;">
-        <p style="margin:0 0 6px;font-size:12px;color:${MUTED};text-transform:uppercase;letter-spacing:0.5px;">Réponse de TechAfrique</p>
+        <p style="margin:0 0 6px;font-size:12px;color:${MUTED};text-transform:uppercase;letter-spacing:0.5px;">Réponse de SunuShop</p>
         <p style="margin:0;font-size:14px;color:${DARK};line-height:1.7;">${replyText}</p>
       </div>
       <p style="margin:0 0 20px;color:${MUTED};font-size:14px;">
         Merci pour votre retour, il nous aide à améliorer nos services !
       </p>
       ${productUrl ? btn('Voir le produit', productUrl) : ''}
-    `, `TechAfrique a répondu à votre avis sur ${productName}`),
+    `, `SunuShop a répondu à votre avis sur ${productName}`),
   }),
 };

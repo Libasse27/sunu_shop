@@ -10,13 +10,16 @@ export const analyticsApi = {
   getPaymentMethodDistribution: () => api.get('/analytics/payments/methods'),
   getRecentActivity: () => api.get('/analytics/recent-activity'),
   getRevenueSummary: () => api.get('/analytics/revenue-summary'),
-  getRevenueByCategory: () => api.get('/analytics/revenue-by-category'),
+  getRevenueByCategory: (days = 30) => api.get(`/analytics/revenue-by-category?days=${days}`),
+  getTopCustomers: () => api.get('/analytics/customers/top'),
+  getRevenueBreakdown: () => api.get('/analytics/revenue-breakdown'),
 };
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 export interface AdminProductsParams {
   search?: string;
   category?: string;
+  supplier?: string;
   page?: number;
   limit?: number;
 }
@@ -35,7 +38,7 @@ export const adminProductsApi = {
   bulkUpdate: (ids: string[], data: Record<string, unknown>) =>
     api.put('/products/admin/bulk-update', { ids, ...data }),
   bulkDelete: (ids: string[]) =>
-    api.delete('/products/admin/bulk-delete', { data: { ids } }),
+    api.post('/products/admin/bulk-delete', { ids }),
 };
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
@@ -56,7 +59,7 @@ export const adminOrdersApi = {
   updateTracking: (id: string, trackingNumber: string) =>
     api.put(`/orders/${id}/tracking`, { trackingNumber }),
   updateNotes: (id: string, adminNote: string) =>
-    api.put(`/orders/${id}`, { adminNote }),
+    api.put(`/orders/${id}/notes`, { adminNote }),
   exportCSV: (params?: { startDate?: string; endDate?: string; status?: string }) =>
     api.get('/orders/export', { params, responseType: 'blob' }),
 };
@@ -121,7 +124,7 @@ export const adminReviewsApi = {
   reject: (id: string) =>
     api.patch(`/reviews/${id}/reject`),
   reply: (id: string, reply: string) =>
-    api.put(`/reviews/${id}/reply`, { reply }),
+    api.post(`/reviews/${id}/reply`, { reply }),
   delete: (id: string) =>
     api.delete(`/reviews/${id}`),
 };
@@ -192,15 +195,29 @@ export const adminNewsletterApi = {
     api.post('/newsletter/unsubscribe', { email }),
 };
 
-// ─── Promo Banners ────────────────────────────────────────────────────────────
+// ─── Promo Banners — unified avec Banner (type=promo) ────────────────────────
 export const adminPromoBannersApi = {
-  getList: () => api.get('/promo-banners/admin/all'),
+  getList: () => api.get('/banners/admin/all?type=promo'),
   create: (data: FormData | Record<string, unknown>) =>
-    api.post('/promo-banners', data),
+    api.post('/banners', { ...data, type: 'promo' }),
   update: (id: string, data: FormData | Record<string, unknown>) =>
-    api.put(`/promo-banners/${id}`, data),
+    api.put(`/banners/${id}`, data),
   delete: (id: string) =>
-    api.delete(`/promo-banners/${id}`),
+    api.delete(`/banners/${id}`),
+};
+
+// ─── Payment Settings ─────────────────────────────────────────────────────────
+
+export interface PaymentSettingsData {
+  waveQrCodeUrl?: string;
+  wavePhoneNumber?: string;
+  orangeMoneyQrCodeUrl?: string;
+  orangeMoneyPhoneNumber?: string;
+}
+
+export const adminPaymentSettingsApi = {
+  get: () => api.get('/payment-settings'),
+  update: (data: PaymentSettingsData) => api.put('/payment-settings', data),
 };
 
 // ─── Upload ───────────────────────────────────────────────────────────────────

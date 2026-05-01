@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Search, UserCheck, UserX, Users, X, ShieldAlert } from 'lucide-react';
+import { Search, UserCheck, UserX, Users } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminEmptyState from '../../components/admin/AdminEmptyState';
@@ -51,7 +51,7 @@ export default function AdminUsersPage() {
     try {
       const { data } = await adminUsersApi.getList({ page, search: search || undefined, role: roleFilter || undefined });
       setUsers(data.data || []);
-      setTotalPages(data.pagination?.pages || 1);
+      setTotalPages(data.pagination?.totalPages || 1);
       setTotal(data.pagination?.total || 0);
     } catch {
       toast.error('Erreur lors du chargement');

@@ -12,8 +12,21 @@ import {
   getPaymentStatus,
   refundPayment,
 } from '../controllers/payment.controller';
+import {
+  createPaymentIntent,
+  getPaymentIntent,
+  confirmQRPayment,
+  cancelPaymentIntent,
+} from '../controllers/paymentVerification.controller';
 
 const router = Router();
+
+// ─── QR PAYMENT (Wave / Orange Money) ────────────────────────────────────────
+
+router.post('/intent',           protect, createPaymentIntent);
+router.get('/intent/:token',     protect, getPaymentIntent);
+router.post('/confirm',          protect, confirmQRPayment);
+router.delete('/intent/:token',  protect, cancelPaymentIntent);
 
 // ─── STRIPE ──────────────────────────────────────────────────────────────────
 

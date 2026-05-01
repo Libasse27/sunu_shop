@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RootState } from '../../store/store';
 import StarRating from '../common/StarRating';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
-import { ThumbsUp, User } from 'lucide-react';
+import { getApiError } from '../../utils/getApiError';
+import { ThumbsUp, User, CheckCircle } from 'lucide-react';
 
 interface Review {
   _id: string;
@@ -14,7 +16,7 @@ interface Review {
   title?: string;
   comment: string;
   helpful: number;
-  adminReply?: string;
+  adminReply?: { text: string; date?: string };
   createdAt: string;
 }
 
@@ -30,6 +32,7 @@ export default function ProductReviews({ productId }: Props) {
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
   const user = useSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
@@ -55,9 +58,10 @@ export default function ProductReviews({ productId }: Props) {
       setRating(0);
       setTitle('');
       setComment('');
+      setHasReviewed(true);
       toast.success('Avis envoyé ! Il sera visible après modération.');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Erreur lors de l\'envoi');
+    } catch (err: unknown) {
+      toast.error(getApiError(err, "Erreur lors de l'envoi"));
     }
     setSubmitting(false);
   };
@@ -81,7 +85,7 @@ export default function ProductReviews({ productId }: Props) {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold mb-0">Avis clients ({reviews.length})</h3>
-        {user && (
+        {user && !hasReviewed && (
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => setShowForm(!showForm)}
@@ -89,6 +93,20 @@ export default function ProductReviews({ productId }: Props) {
           >
             {showForm ? 'Annuler' : 'Écrire un avis'}
           </motion.button>
+        )}
+        {user && hasReviewed && (
+          <span className="text-sm text-green-600 font-medium flex items-center gap-1">
+            <CheckCircle size={14} /> Avis envoyé, en attente de modération
+          </span>
+        )}
+        {!user && (
+          <Link
+            to={`/connexion?redirect=${encodeURIComponent(window.location.pathname)}`}
+            className="text-sm font-semibold"
+            style={{ color: '#009A44' }}
+          >
+            Connectez-vous pour laisser un avis →
+          </Link>
         )}
       </div>
 
@@ -173,7 +191,7 @@ export default function ProductReviews({ productId }: Props) {
               {review.adminReply && (
                 <div className="mt-3 ml-4 pl-3" style={{ borderLeft: '2px solid rgba(0,154,68,0.3)' }}>
                   <p className="text-sm font-semibold mb-1" style={{ color: '#009A44' }}>Réponse de Sunu Shop</p>
-                  <p className="text-sm text-gray-500 mb-0">{review.adminReply}</p>
+                  <p className="text-sm text-gray-500 mb-0">{review.adminReply.text}</p>
                 </div>
               )}
               <button

@@ -106,7 +106,7 @@ const services = [
     estimatedDuration: '1 à 3 jours ouvrés',
     isAvailable: true,
     order: 1,
-    whatsappMessage: 'Bonjour TechAfrique, j\'ai besoin d\'une réparation pour mon ordinateur.',
+    whatsappMessage: 'Bonjour SunuShop, j\'ai besoin d\'une réparation pour mon ordinateur.',
     features: ['Diagnostic gratuit', 'Pièces de remplacement originales', 'Garantie 3 mois', 'Devis avant intervention'],
     image: 'https://images.unsplash.com/photo-1588702547919-26089e690ecc?w=600',
   },
@@ -120,7 +120,7 @@ const services = [
     estimatedDuration: '2h à 1 jour ouvré',
     isAvailable: true,
     order: 2,
-    whatsappMessage: 'Bonjour TechAfrique, j\'ai besoin d\'une réparation pour mon téléphone.',
+    whatsappMessage: 'Bonjour SunuShop, j\'ai besoin d\'une réparation pour mon téléphone.',
     features: ['Remplacement écran', 'Changement batterie', 'Déblocage réseau', 'Récupération données'],
     image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600',
   },
@@ -134,7 +134,7 @@ const services = [
     estimatedDuration: '1 à 2 jours',
     isAvailable: true,
     order: 3,
-    whatsappMessage: 'Bonjour TechAfrique, je souhaite installer un système de caméras de surveillance.',
+    whatsappMessage: 'Bonjour SunuShop, je souhaite installer un système de caméras de surveillance.',
     features: ['Audit sécurité gratuit', 'Caméras HD/4K', 'Accès smartphone', 'Garantie installation'],
     image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600',
   },
@@ -148,7 +148,7 @@ const services = [
     estimatedDuration: '4h à 1 jour',
     isAvailable: true,
     order: 4,
-    whatsappMessage: 'Bonjour TechAfrique, je voudrais installer un réseau Wi-Fi.',
+    whatsappMessage: 'Bonjour SunuShop, je voudrais installer un réseau Wi-Fi.',
     features: ['Audit réseau', 'Configuration sécurisée', 'Couverture optimale', 'Support après installation'],
     image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600',
   },
@@ -162,7 +162,7 @@ const services = [
     estimatedDuration: '2 à 5 jours ouvrés',
     isAvailable: true,
     order: 5,
-    whatsappMessage: 'Bonjour TechAfrique, j\'ai perdu des données importantes et j\'ai besoin d\'aide.',
+    whatsappMessage: 'Bonjour SunuShop, j\'ai perdu des données importantes et j\'ai besoin d\'aide.',
     features: ['Diagnostic gratuit', 'Aucun frais si échec', 'Confidentialité garantie', 'Rapport détaillé'],
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600',
   },
@@ -176,13 +176,13 @@ const services = [
     estimatedDuration: '2 à 4 heures',
     isAvailable: true,
     order: 6,
-    whatsappMessage: 'Bonjour TechAfrique, je voudrais faire entretenir mon ordinateur.',
+    whatsappMessage: 'Bonjour SunuShop, je voudrais faire entretenir mon ordinateur.',
     features: ['Nettoyage interne', 'Optimisation système', 'Mise à jour drivers', 'Rapport d\'état'],
     image: 'https://images.unsplash.com/photo-1597852074816-d933c7d2b988?w=600',
   },
 ];
 
-const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: Record<string, string>) => [
+const generateProducts = (_categoryMap: Record<string, string>, subCategoryMap: Record<string, string>) => [
   // Informatique — Ordinateurs Portables
   {
     name: 'Laptop ASUS VivoBook 15 — Intel Core i5 12e Gen',
@@ -191,8 +191,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'LAP-ASUS-VB15-001',
     price: 380000,
     compareAtPrice: 420000,
-    category: categoryMap['Informatique'],
-    subCategory: subCategoryMap['Ordinateurs Portables'],
+    category: subCategoryMap['Ordinateurs Portables'],
     images: [{ url: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600', isPrimary: true, order: 0, alt: 'ASUS VivoBook 15' }],
     tags: ['laptop', 'asus', 'vivobook', 'intel', 'i5', 'windows'],
     specifications: [
@@ -216,8 +215,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'LAP-APL-MBA-M2-001',
     price: 950000,
     compareAtPrice: 1050000,
-    category: categoryMap['Informatique'],
-    subCategory: subCategoryMap['Ordinateurs Portables'],
+    category: subCategoryMap['Ordinateurs Portables'],
     images: [{ url: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600', isPrimary: true, order: 0, alt: 'MacBook Air M2' }],
     tags: ['macbook', 'apple', 'm2', 'macos', 'ultrabook'],
     specifications: [
@@ -239,8 +237,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     shortDescription: 'HP EliteBook 840 G9 — Intel i7, 16Go RAM, 512Go SSD, certifié pro',
     sku: 'LAP-HP-EB840-001',
     price: 680000,
-    category: categoryMap['Informatique'],
-    subCategory: subCategoryMap['Ordinateurs Portables'],
+    category: subCategoryMap['Ordinateurs Portables'],
     images: [{ url: 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600', isPrimary: true, order: 0, alt: 'HP EliteBook 840' }],
     tags: ['hp', 'elitebook', 'professionnel', 'intel', 'i7', 'windows'],
     specifications: [
@@ -263,8 +260,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'PHN-SAM-S23FE-256-001',
     price: 280000,
     compareAtPrice: 320000,
-    category: categoryMap['Téléphonie Mobile'],
-    subCategory: subCategoryMap['Smartphones Android'],
+    category: subCategoryMap['Smartphones Android'],
     images: [{ url: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600', isPrimary: true, order: 0, alt: 'Samsung Galaxy S23 FE' }],
     tags: ['samsung', 'galaxy', 's23', 'android', 'smartphone'],
     variants: [
@@ -291,8 +287,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'PHN-XIA-RN13P-128-001',
     price: 185000,
     compareAtPrice: 210000,
-    category: categoryMap['Téléphonie Mobile'],
-    subCategory: subCategoryMap['Smartphones Android'],
+    category: subCategoryMap['Smartphones Android'],
     images: [{ url: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600', isPrimary: true, order: 0, alt: 'Xiaomi Redmi Note 13 Pro' }],
     tags: ['xiaomi', 'redmi', 'note13', 'android', 'photo'],
     variants: [
@@ -317,8 +312,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     shortDescription: 'Apple iPhone 15 — 6Go RAM, 128Go, caméra 48MP, USB-C',
     sku: 'PHN-APL-IP15-128-001',
     price: 620000,
-    category: categoryMap['Téléphonie Mobile'],
-    subCategory: subCategoryMap['iPhone Apple'],
+    category: subCategoryMap['iPhone Apple'],
     images: [{ url: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600', isPrimary: true, order: 0, alt: 'iPhone 15' }],
     tags: ['iphone', 'apple', 'ios', 'usb-c', 'dynamic-island'],
     variants: [
@@ -346,8 +340,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'TV-SAM-55-4K-001',
     price: 520000,
     compareAtPrice: 600000,
-    category: categoryMap['Électronique & TV'],
-    subCategory: subCategoryMap['Téléviseurs'],
+    category: subCategoryMap['Téléviseurs'],
     images: [{ url: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829e1?w=600', isPrimary: true, order: 0, alt: 'Samsung Smart TV 55"' }],
     tags: ['tv', 'samsung', '4k', 'smart-tv', 'uhd'],
     specifications: [
@@ -370,8 +363,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'AUD-JBL-CHG5-001',
     price: 95000,
     compareAtPrice: 115000,
-    category: categoryMap['Électronique & TV'],
-    subCategory: subCategoryMap['Audio & Son'],
+    category: subCategoryMap['Audio & Son'],
     images: [{ url: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600', isPrimary: true, order: 0, alt: 'JBL Charge 5' }],
     tags: ['enceinte', 'jbl', 'bluetooth', 'portable', 'ip67'],
     variants: [
@@ -397,8 +389,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'ELM-SAM-FRIGO-385-001',
     price: 420000,
     compareAtPrice: 490000,
-    category: categoryMap['Électroménager'],
-    subCategory: subCategoryMap['Réfrigérateurs'],
+    category: subCategoryMap['Réfrigérateurs'],
     images: [{ url: 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=600', isPrimary: true, order: 0, alt: 'Samsung Réfrigérateur' }],
     tags: ['réfrigérateur', 'samsung', 'no-frost', 'combiné', 'a+'],
     specifications: [
@@ -420,8 +411,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     shortDescription: 'Midea Inverter 1.5 CV Chaud/Froid — WiFi, filtre anti-bactérien, installation incluse',
     sku: 'ELM-MID-CLIM-15-001',
     price: 350000,
-    category: categoryMap['Électroménager'],
-    subCategory: subCategoryMap['Climatiseurs'],
+    category: subCategoryMap['Climatiseurs'],
     images: [{ url: 'https://images.unsplash.com/photo-1631545804833-8cc0f20e1e00?w=600', isPrimary: true, order: 0, alt: 'Climatiseur Midea' }],
     tags: ['climatiseur', 'midea', 'inverter', 'wifi', 'chaud-froid'],
     specifications: [
@@ -444,8 +434,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'ACC-LOG-MXM3S-001',
     price: 65000,
     compareAtPrice: 78000,
-    category: categoryMap['Accessoires & Câbles'],
-    subCategory: subCategoryMap['Claviers & Souris'],
+    category: subCategoryMap['Claviers & Souris'],
     images: [{ url: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600', isPrimary: true, order: 0, alt: 'Logitech MX Master 3S' }],
     tags: ['souris', 'logitech', 'sans-fil', 'bluetooth', 'professionnel'],
     variants: [
@@ -469,8 +458,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'ACC-SAM-T7-1TO-001',
     price: 78000,
     compareAtPrice: 92000,
-    category: categoryMap['Accessoires & Câbles'],
-    subCategory: subCategoryMap['Stockage'],
+    category: subCategoryMap['Stockage'],
     images: [{ url: 'https://images.unsplash.com/photo-1597852074816-d933c7d2b988?w=600', isPrimary: true, order: 0, alt: 'Samsung T7 SSD' }],
     tags: ['ssd', 'samsung', 'externe', 'stockage', 'usb3'],
     variants: [
@@ -497,8 +485,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'CAM-HIK-KIT4-2MP-001',
     price: 185000,
     compareAtPrice: 220000,
-    category: categoryMap['Caméra & Surveillance'],
-    subCategory: subCategoryMap['Caméras Analogiques'],
+    category: subCategoryMap['Caméras Analogiques'],
     images: [{ url: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600', isPrimary: true, order: 0, alt: 'Kit vidéosurveillance Hikvision' }],
     tags: ['camera', 'surveillance', 'hikvision', 'cctv', 'dvr', 'securite'],
     specifications: [
@@ -522,8 +509,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'CAM-REO-IP4MP-EXT-001',
     price: 45000,
     compareAtPrice: 58000,
-    category: categoryMap['Caméra & Surveillance'],
-    subCategory: subCategoryMap['Caméras IP'],
+    category: subCategoryMap['Caméras IP'],
     images: [{ url: 'https://images.unsplash.com/photo-1533073526757-2c8ca1df9f1c?w=600', isPrimary: true, order: 0, alt: 'Caméra IP Reolink' }],
     tags: ['camera', 'ip', 'wifi', 'reolink', 'exterieur', 'surveillance'],
     variants: [
@@ -551,8 +537,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     shortDescription: 'Sony DualSense PS5 — Retour haptique, gâchettes adaptatives, USB-C',
     sku: 'GAM-SON-DUAL-001',
     price: 55000,
-    category: categoryMap['Gaming'],
-    subCategory: subCategoryMap['Consoles de Jeux'],
+    category: subCategoryMap['Consoles de Jeux'],
     images: [{ url: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600', isPrimary: true, order: 0, alt: 'DualSense PS5' }],
     tags: ['manette', 'playstation', 'ps5', 'dualsense', 'gaming'],
     variants: [
@@ -575,8 +560,7 @@ const generateProducts = (categoryMap: Record<string, string>, subCategoryMap: R
     sku: 'GAM-HPX-CLDII-001',
     price: 48000,
     compareAtPrice: 60000,
-    category: categoryMap['Gaming'],
-    subCategory: subCategoryMap['Accessoires Gaming'],
+    category: subCategoryMap['Accessoires Gaming'],
     images: [{ url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600', isPrimary: true, order: 0, alt: 'HyperX Cloud II' }],
     tags: ['casque', 'hyperx', 'gaming', 'son-7.1', 'micro'],
     variants: [
@@ -612,13 +596,13 @@ async function seed() {
     // Create admin
     await User.create({
       firstName: 'Admin',
-      lastName: 'TechAfrique',
-      email: 'admin@techafrique.sn',
+      lastName: 'SunuShop',
+      email: 'admin@sunushop.sn',
       password: 'Admin@123456',
       role: 'superadmin',
       isVerified: true,
     });
-    console.log('👤 Admin créé (admin@techafrique.sn / Admin@123456)');
+    console.log('👤 Admin créé (admin@sunushop.sn / Admin@123456)');
 
     // Create demo client
     await User.create({
@@ -676,7 +660,7 @@ async function seed() {
     }
     console.log(`🔧 ${services.length} services créés`);
 
-    console.log('\n✨ Seed TechAfrique terminé avec succès !');
+    console.log('\n✨ Seed SunuShop terminé avec succès !');
     process.exit(0);
   } catch (error) {
     console.error('❌ Erreur seed:', error);

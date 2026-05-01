@@ -33,7 +33,6 @@ export interface IProduct extends Document {
   currency: string;
   images: IProductImage[];
   category: mongoose.Types.ObjectId;
-  subCategory?: mongoose.Types.ObjectId;
   tags: string[];
   variants: Array<{
     name: string;
@@ -89,7 +88,6 @@ const ProductSchema = new Schema<IProduct>({
     order: { type: Number, default: 0 },
   }],
   category: { type: Schema.Types.ObjectId, ref: 'Category', required: true, index: true },
-  subCategory: { type: Schema.Types.ObjectId, ref: 'Category' },
   tags: [{ type: String, lowercase: true, trim: true }],
   variants: [{
     name: String,
@@ -156,6 +154,11 @@ ProductSchema.index({ 'supplier.name': 1 });              // filtre par fourniss
 ProductSchema.index({ isActive: 1, isOnSale: 1 });           // page soldes
 ProductSchema.index({ isActive: 1, isNewArrival: 1 });        // nouvelles arrivées
 ProductSchema.index({ isActive: 1, stock: 1 });               // alertes stock bas (admin)
+
+// Performance indexes pour filtres secondaires
+ProductSchema.index({ isActive: 1, brand: 1 });           // filtre par marque
+ProductSchema.index({ isActive: 1, tags: 1 });             // filtre par tags
+ProductSchema.index({ isActive: 1, rating: -1 });          // tri par note
 
 ProductSchema.virtual('discountPercentage').get(function () {
   if (this.compareAtPrice && this.compareAtPrice > this.price) {

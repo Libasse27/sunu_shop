@@ -109,6 +109,7 @@ describe('ProductCard', () => {
   it('affiche le badge "Rupture" quand stock = 0', () => {
     const outOfStock = { ...mockProduct, stock: 0 };
     render(<Wrapper store={store}><ProductCard product={outOfStock} /></Wrapper>);
-    expect(screen.getByText(/Rupture/i)).toBeInTheDocument();
+    // La carte affiche au moins un élément "Rupture" (badge ou bouton)
+    expect(screen.getAllByText(/Rupture/i).length).toBeGreaterThan(0);
   });
 });

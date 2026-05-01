@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { Product } from '../../types/product.types';
 import { formatPrice, getDiscountPercent } from '../../utils/formatPrice';
+import { CLD } from '../../utils/cloudinary';
 import { addToCart } from '../../features/cart/cartSlice';
 import { toggleWishlistAsync } from '../../features/wishlist/wishlistSlice';
 import { RootState, AppDispatch } from '../../store/store';
@@ -69,10 +70,13 @@ export default function ProductCard({ product }: Props) {
         {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-gray-50">
           <img
-            src={primaryImage?.url || '/placeholder.jpg'}
+            src={CLD.card(primaryImage?.url)}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
+            width={400}
+            height={400}
+            decoding="async"
           />
 
           {/* Badges */}
@@ -85,6 +89,7 @@ export default function ProductCard({ product }: Props) {
           <motion.button
             whileTap={{ scale: 0.85 }}
             onClick={handleWishlist}
+            title={isWished ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             className="absolute flex items-center justify-center rounded-full transition-all shadow-sm border-0 hover:scale-110"
             style={{
               top: '0.75rem',
@@ -105,6 +110,7 @@ export default function ProductCard({ product }: Props) {
                 whileTap={{ scale: 0.97 }}
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
+                title={product.stock === 0 ? 'Rupture de stock' : 'Ajouter au panier'}
                 className="flex-1 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 border-0 shadow transition-colors disabled:opacity-60"
                 style={{ backgroundColor: product.stock === 0 ? '#9ca3af' : '#009A44' }}
               >

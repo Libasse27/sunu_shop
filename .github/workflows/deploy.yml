@@ -1,4 +1,4 @@
-name: Deploy — Production TechAfrique
+name: Deploy — Production SunuShop
 
 on:
   push:
@@ -20,11 +20,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Vérification des secrets de production
+        env:
+          JWT_ACCESS_SECRET:  ${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          METRICS_SECRET:     ${{ secrets.METRICS_SECRET }}
+          GRAFANA_PASSWORD:   ${{ secrets.GRAFANA_PASSWORD }}
+          MONGODB_URI:        ${{ secrets.MONGODB_URI }}
+          STRIPE_SECRET_KEY:  ${{ secrets.STRIPE_SECRET_KEY }}
+          WAVE_API_KEY:       ${{ secrets.WAVE_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: bash scripts/check-secrets.sh
+
       - name: Build server Docker image
         run: |
           docker build \
-            -t techafrique-server:${{ github.sha }} \
-            -t techafrique-server:latest \
+            -t sunushop-server:${{ github.sha }} \
+            -t sunushop-server:latest \
             -f Dockerfile.server \
             --target runner \
             .
@@ -36,9 +48,9 @@ jobs:
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
           script: |
-            cd /app/techafrique
+            cd /app/sunushop
             git pull origin main
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f docker-compose.prod.yml pull --ignore-buildable
+            docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
             docker system prune -f
             echo "Deploy $(git rev-parse --short HEAD) termine"

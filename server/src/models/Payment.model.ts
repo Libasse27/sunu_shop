@@ -34,5 +34,6 @@ const PaymentSchema = new Schema<IPayment>({
 
 PaymentSchema.index({ order: 1 });
 PaymentSchema.index({ user: 1, createdAt: -1 });
+PaymentSchema.index({ transactionId: 1 }, { sparse: true }); // webhook callbacks: findOne({ transactionId })
 
 export default mongoose.model<IPayment>('Payment', PaymentSchema);

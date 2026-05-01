@@ -1,50 +1,25 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import {
-  CheckCircle, Package, ArrowRight, Truck,
-  Mail, MessageCircle, MapPin, Copy, Check,
-} from 'lucide-react';
+import { Package, ArrowRight, Truck, Mail, MessageCircle, MapPin, Star, CheckCircle, Check, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useDispatch } from 'react-redux';
+import { clearCart } from '../features/cart/cartSlice';
 import api from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 import { WHATSAPP_NUMBER } from '../utils/constants';
-
-interface OrderItem {
-  name: string;
-  image: string;
-  quantity: number;
-  price: number;
-  subtotal: number;
-  variant?: { name: string; value: string };
-}
-
 interface OrderDetails {
   _id: string;
   orderNumber: string;
   status: string;
   createdAt: string;
-  items: OrderItem[];
-  pricing: {
-    subtotal: number;
-    shippingCost: number;
-    discount: number;
-    total: number;
-  };
-  payment: {
-    method: string;
-    status: string;
-  };
-  shippingAddress: {
-    fullName: string;
-    phone: string;
-    street: string;
-    city: string;
-    country: string;
-  };
+  items: { name: string; image: string; quantity: number; price: number; subtotal: number; variant?: { name: string; value: string } }[];
+  pricing: { subtotal: number; shippingCost: number; discount: number; total: number };
+  payment: { method: string; status: string };
+  shippingAddress: { fullName: string; phone: string; street: string; city: string; country: string };
 }
 
-const methodLabels: Record<string, string> = {
+const METHOD_LABELS: Record<string, string> = {
   stripe: 'Carte bancaire',
   orange_money: 'Orange Money',
   wave: 'Wave',
@@ -63,22 +38,53 @@ const itemVariants = {
 
 export default function PaymentSuccessPage() {
   const [searchParams] = useSearchParams();
+  const dispatch = useDispatch();
   const orderId = searchParams.get('order');
   const method = searchParams.get('method') || '';
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [polling, setPolling] = useState(false);
 
   useEffect(() => {
-    if (orderId) {
-      api.get(`/orders/${orderId}`)
-        .then(res => setOrder(res.data.data))
-        .catch(() => {})
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [orderId]);
+    dispatch(clearCart());
+
+    if (!orderId) { setLoading(false); return; }
+
+    const isExternalRedirect = ['wave', 'orange_money'].includes(method);
+
+    api.get(`/orders/${orderId}`)
+      .then(res => {
+        const fetched: OrderDetails = res.data.data;
+        setOrder(fetched);
+
+        // Polling uniquement si le paiement est encore en attente après une
+        // redirection externe (Wave/Orange Money redirect vers success_url)
+        if (isExternalRedirect && fetched.payment.status !== 'completed') {
+          setPolling(true);
+          let tries = 0;
+          const MAX = 12; // 12 × 3s = 36s max
+          const id = setInterval(async () => {
+            tries++;
+            try {
+              const r = await api.get(`/orders/${orderId}`);
+              const updated: OrderDetails = r.data.data;
+              setOrder(updated);
+              if (updated.payment.status === 'completed' || tries >= MAX) {
+                clearInterval(id);
+                setPolling(false);
+              }
+            } catch {
+              clearInterval(id);
+              setPolling(false);
+            }
+          }, 3000);
+          return () => clearInterval(id);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [orderId, method, dispatch]);
 
   const handleCopy = () => {
     if (order) {
@@ -143,11 +149,20 @@ export default function PaymentSuccessPage() {
               <p className="text-gray-600">
                 {isCashOnDelivery
                   ? 'Votre commande a été enregistrée. Vous paierez à la livraison.'
-                  : `Paiement par ${methodLabels[method] || method} traité avec succès.`
+                  : `Paiement par ${METHOD_LABELS[method] || method} traité avec succès.`
                 }
               </p>
             </motion.div>
           </div>
+
+          {/* Polling indicator — paiement Wave/OM encore en attente de confirmation */}
+          {polling && order?.payment.status !== 'completed' && (
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl mb-3 text-sm"
+              style={{ background: 'rgba(252,209,22,0.1)', border: '1px solid rgba(252,209,22,0.3)' }}>
+              <div className="rounded-full border-2 border-yellow-500 shrink-0 animate-spin" style={{ width: 16, height: 16, borderTopColor: 'transparent' }} />
+              <span style={{ color: '#92400e' }}>Vérification du paiement en cours… cela peut prendre quelques secondes.</span>
+            </div>
+          )}
 
           {/* Loading skeleton */}
           {loading && (
@@ -258,7 +273,7 @@ export default function PaymentSuccessPage() {
                   <span className="text-gray-500">Moyen de paiement</span>
                   <span className="inline-flex items-center gap-2 font-medium">
                     <CheckCircle size={14} style={{ color: '#009A44' }} />
-                    {methodLabels[order.payment.method] || order.payment.method}
+                    {METHOD_LABELS[order.payment.method] || order.payment.method}
                   </span>
                 </div>
               </motion.div>
@@ -352,6 +367,26 @@ export default function PaymentSuccessPage() {
               >
                 Suivre ma commande →
               </Link>
+            )}
+
+            {order && order.items.length > 0 && (
+              <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-0.5 flex items-center gap-2">
+                    <Star size={14} style={{ color: '#FCD116' }} /> Donnez votre avis
+                  </p>
+                  <p className="text-xs text-gray-500 mb-0">
+                    Une fois votre commande livrée, partagez votre expérience depuis "Mes commandes".
+                  </p>
+                </div>
+                <Link
+                  to="/mon-compte/commandes"
+                  className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border no-underline transition-colors"
+                  style={{ color: '#009A44', borderColor: 'rgba(0,154,68,0.3)' }}
+                >
+                  Mes commandes →
+                </Link>
+              </div>
             )}
 
             <a

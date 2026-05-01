@@ -49,7 +49,7 @@ export default function ProductFilter({ filters, onChange, onReset, isMobile, on
     api.get('/categories/tree').then(({ data }) => setCategories(data.data || [])).catch(() => {});
   }, []);
 
-  const update = (key: keyof FilterState, value: any) => onChange({ ...filters, [key]: value });
+  const update = (key: keyof FilterState, value: FilterState[keyof FilterState]) => onChange({ ...filters, [key]: value });
 
   const activeCount = [
     filters.category,

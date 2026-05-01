@@ -12,9 +12,12 @@ export const errorHandler = (err: Error, _req: Request, res: Response, _next: Ne
     });
   }
 
-  // Mongoose validation error
+  // Mongoose validation error — même format que validate.middleware { field, message }
   if (err.name === 'ValidationError') {
-    const errors = Object.values((err as any).errors).map((e: any) => e.message);
+    const errors = Object.values((err as any).errors).map((e: any) => ({
+      field:   e.path ?? e.properties?.path,
+      message: e.message,
+    }));
     return res.status(400).json({
       success: false,
       message: 'Erreur de validation',

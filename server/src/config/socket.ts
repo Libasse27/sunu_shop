@@ -4,6 +4,17 @@ import { createAdapter } from '@socket.io/redis-adapter';
 import { env } from './env';
 import { redisPub, redisSub } from './redis';
 import { socketConnections } from '../utils/metrics';
+import type { IOrder } from '../models/Order.model';
+
+// Payload minimal pour les événements socket (subset sérialisable)
+interface NotificationPayload {
+  _id?: string;
+  type: string;
+  title: string;
+  message: string;
+  data?: Record<string, unknown>;
+  createdAt?: Date;
+}
 
 let io: Server | null = null;
 
@@ -51,23 +62,14 @@ export const getIO = (): Server => {
   return io;
 };
 
-// Helper function to emit notification to a specific user
-export const emitNotificationToUser = (userId: string, notification: any) => {
-  if (io) {
-    io.to(`user:${userId}`).emit('notification', notification);
-  }
+export const emitNotificationToUser = (userId: string, notification: NotificationPayload) => {
+  if (io) io.to(`user:${userId}`).emit('notification', notification);
 };
 
-// Helper function to emit order update to a specific user
-export const emitOrderUpdateToUser = (userId: string, order: any) => {
-  if (io) {
-    io.to(`user:${userId}`).emit('orderUpdate', order);
-  }
+export const emitOrderUpdateToUser = (userId: string, order: Partial<IOrder>) => {
+  if (io) io.to(`user:${userId}`).emit('orderUpdate', order);
 };
 
-// Helper function to broadcast to all connected clients (for admin broadcasts)
-export const broadcastNotification = (notification: any) => {
-  if (io) {
-    io.emit('broadcast', notification);
-  }
+export const broadcastNotification = (notification: NotificationPayload) => {
+  if (io) io.emit('broadcast', notification);
 };

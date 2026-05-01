@@ -26,8 +26,7 @@ const NotificationSchema = new Schema<INotification>({
   readAt: Date,
 }, { timestamps: true });
 
-// Compound index for efficient queries
 NotificationSchema.index({ user: 1, isRead: 1 });
-NotificationSchema.index({ createdAt: -1 });
+NotificationSchema.index({ user: 1, createdAt: -1 }); // timeline des notifs d'un utilisateur
 
 export default mongoose.model<INotification>('Notification', NotificationSchema);

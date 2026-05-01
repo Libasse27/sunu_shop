@@ -13,7 +13,6 @@ import { Worker, Job } from 'bullmq';
 import { bullConnection, InvoiceJobData, queueEmail } from '../config/queue';
 import { queueJobsCompleted, queueJobsFailed } from '../utils/metrics';
 import logger from '../utils/logger';
-import type { IOrder } from '../models/Order.model';
 
 const invoiceWorker = new Worker<InvoiceJobData>(
   'invoices',
@@ -27,7 +26,7 @@ const invoiceWorker = new Worker<InvoiceJobData>(
     const order = await Order.findById(orderId)
       .populate('user', 'firstName lastName email')
       .populate('items.product', 'name images')
-      .lean<IOrder>();
+      .lean() as PopulatedOrder | null;
 
     if (!order) {
       throw new Error(`Commande ${orderId} introuvable pour la facture`);
@@ -40,7 +39,7 @@ const invoiceWorker = new Worker<InvoiceJobData>(
     await queueEmail({
       type:    'orderConfirmation',
       to:      email,
-      subject: `Facture TechAfrique — Commande ${orderNumber}`,
+      subject: `Facture SunuShop — Commande ${orderNumber}`,
       html:    invoiceHtml,
     });
 
@@ -83,7 +82,7 @@ function buildInvoiceHtml(order: PopulatedOrder, orderNumber: string): string {
     <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8" /></head>
     <body style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937;">
       <div style="background:${PRIMARY};color:white;padding:24px;border-radius:12px 12px 0 0;text-align:center;">
-        <h1 style="margin:0;font-size:24px;">TechAfrique</h1>
+        <h1 style="margin:0;font-size:24px;">SunuShop</h1>
         <p style="margin:8px 0 0;">FACTURE — ${orderNumber}</p>
       </div>
       <div style="border:1px solid #e5e7eb;border-top:none;padding:24px;border-radius:0 0 12px 12px;">
@@ -103,7 +102,7 @@ function buildInvoiceHtml(order: PopulatedOrder, orderNumber: string): string {
           Total : ${order.pricing?.total?.toLocaleString('fr-FR')} FCFA
         </div>
         <p style="margin-top:24px;color:#6b7280;font-size:13px;text-align:center;">
-          TechAfrique — Dakar, Sénégal | contact@techafrique.sn
+          SunuShop — Dakar, Sénégal | contact@sunushop.sn
         </p>
       </div>
     </body></html>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
@@ -8,7 +8,8 @@ import ProductCard from '../components/product/ProductCard';
 import { ProductCardSkeleton } from '../components/skeletons';
 import api from '../services/api';
 import { productApi } from '../services/product.api';
-import { Product, Category } from '../types/product.types';
+import { Category } from '../types/product.types';
+import { SITE_URL } from '../utils/constants';
 
 const sortOptions = [
   { value: 'newest', label: 'Plus récents' },
@@ -23,8 +24,6 @@ export default function ShopPage() {
   const { category: categorySlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -35,20 +34,21 @@ export default function ShopPage() {
   const onSale = searchParams.get('onSale') || '';
   const inStock = searchParams.get('inStock') || '';
 
-  // Fetch categories une seule fois — indépendant du fetch produits
-  useEffect(() => {
-    api.get('/categories')
-      .then(res => setCategories(res.data.data || []))
-      .catch(() => {})
-      .finally(() => setCategoriesLoaded(true));
-  }, []);
+  // Catégories cachées 10 min — changent rarement, pas besoin de refetch à chaque page
+  const { data: categoriesData, isFetched: categoriesFetched } = useQuery({
+    queryKey: ['categories'],
+    queryFn: ({ signal }) =>
+      api.get('/categories', { signal }).then(r => r.data.data as Category[]),
+    staleTime: 10 * 60 * 1000,
+    initialData: [] as Category[],
+  });
+  const categories = categoriesData ?? [];
 
   // ID de catégorie dérivé (calculé à chaque render, pas d'état séparé)
   const categoryId = categories.find(c => c.slug === categorySlug)?._id;
 
-  // Construction des filtres — n'envoie la requête que si les catégories sont prêtes
-  // (quand un slug est demandé) pour éviter un double fetch sans categoryId
-  const filtersReady = !categorySlug || categoriesLoaded;
+  // N'envoie la requête produits que si les catégories sont prêtes quand un slug est demandé
+  const filtersReady = !categorySlug || categoriesFetched;
 
   const { data: productsData, isLoading, isFetching } = useQuery({
     queryKey: ['products', { page, sort, search, categoryId, minPrice, maxPrice, onSale, inStock }],
@@ -70,7 +70,7 @@ export default function ShopPage() {
 
   const products = productsData?.data ?? [];
   const total = productsData?.pagination.total ?? 0;
-  const totalPages = productsData?.pagination.pages ?? 1;
+  const totalPages = productsData?.pagination.totalPages ?? 1;
 
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -85,7 +85,31 @@ export default function ShopPage() {
   return (
     <>
       <Helmet>
-        <title>{currentCategory?.name || 'Boutique'} — TechAfrique</title>
+        <title>{search ? `Résultats pour « ${search} » — Sunu Shop` : currentCategory?.name ? `${currentCategory.name} — Sunu Shop` : 'Boutique — Sunu Shop'}</title>
+        <meta name="description" content={
+          search
+            ? `${total} produit${total !== 1 ? 's' : ''} trouvé${total !== 1 ? 's' : ''} pour « ${search} » sur Sunu Shop. Laptops, smartphones, électronique en Afrique de l'Ouest.`
+            : currentCategory
+              ? `Découvrez nos ${currentCategory.name} au meilleur prix. ${total} références disponibles. Livraison Dakar et régions, paiement Orange Money et Wave.`
+              : 'Toute notre sélection tech : laptops, smartphones, TV, électroménager, gaming. Livraison en Afrique de l\'Ouest. Prix en FCFA.'
+        } />
+        <link rel="canonical" href={
+          categorySlug
+            ? `${SITE_URL}/boutique/${categorySlug}`
+            : `${SITE_URL}/boutique`
+        } />
+
+        {/* Open Graph */}
+        <meta property="og:type"        content="website" />
+        <meta property="og:site_name"   content="Sunu Shop" />
+        <meta property="og:title"       content={currentCategory?.name ? `${currentCategory.name} — Sunu Shop` : 'Boutique — Sunu Shop'} />
+        <meta property="og:description" content={currentCategory ? `Découvrez nos ${currentCategory.name} au meilleur prix.` : 'Toute la tech au meilleur prix en Afrique de l\'Ouest.'} />
+        <meta property="og:url"         content={categorySlug ? `${SITE_URL}/boutique/${categorySlug}` : `${SITE_URL}/boutique`} />
+
+        {/* Twitter Cards */}
+        <meta name="twitter:card"  content="summary" />
+        <meta name="twitter:site"  content="@sunushop" />
+        <meta name="twitter:title" content={currentCategory?.name ? `${currentCategory.name} — Sunu Shop` : 'Boutique Tech — Sunu Shop'} />
       </Helmet>
 
       {/* Hero sénégalais */}
@@ -99,15 +123,34 @@ export default function ShopPage() {
           <nav className="text-sm mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
             <span>Accueil</span> / <span style={{ color: 'rgba(255,255,255,0.9)' }}>{currentCategory?.name || 'Boutique'}</span>
           </nav>
-          <h1 className="font-bold text-2xl text-white mb-0">{currentCategory?.name || 'Boutique'}</h1>
-          <p className="text-sm mt-1 mb-0" style={{ color: 'rgba(255,255,255,0.6)' }}>{total} produit{total > 1 ? 's' : ''} trouvé{total > 1 ? 's' : ''}</p>
+          <h1 className="font-bold text-2xl text-white mb-0">
+            {search ? `Résultats pour « ${search} »` : currentCategory?.name || 'Boutique'}
+          </h1>
+          <p className="text-sm mt-1 mb-0" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            {search
+              ? `${total} produit${total !== 1 ? 's' : ''} trouvé${total !== 1 ? 's' : ''}`
+              : `${total} produit${total !== 1 ? 's' : ''} disponible${total !== 1 ? 's' : ''}`
+            }
+          </p>
+          {search && (
+            <button
+              onClick={() => updateFilter('search', '')}
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border-0 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)' }}
+            >
+              <X size={12} />
+              Effacer la recherche
+            </button>
+          )}
         </div>
       </section>
 
       <div className="container-custom py-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <h2 className="font-bold text-lg mb-0 text-gray-900">{currentCategory?.name || 'Tous les produits'}</h2>
+            <h2 className="font-bold text-lg mb-0 text-gray-900">
+              {search ? `« ${search} »` : currentCategory?.name || 'Tous les produits'}
+            </h2>
             {/* Indicateur discret de refetch lors de changements de page/filtres */}
             {isFetching && !isLoading && (
               <span className="inline-block w-3 h-3 rounded-full border-2 border-transparent border-t-[#009A44] animate-spin" />
@@ -291,7 +334,7 @@ function FiltersContent({
                 className={`block text-sm py-1 no-underline transition-colors ${categorySlug === cat.slug ? 'font-semibold' : 'text-gray-500'}`}
                 style={categorySlug === cat.slug ? { color: '#009A44' } : {}}
               >
-                {(cat as any).icon} {cat.name}
+                {cat.icon} {cat.name}
               </a>
               {cat.children && cat.children.length > 0 && (
                 <ul className="list-none ml-4 mt-1 flex flex-col gap-1 mb-0 p-0">

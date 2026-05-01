@@ -9,6 +9,31 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary', 'html'],
+      reportsDirectory: './coverage',
+      // Seuils bloquants CI — les modules critiques doivent atteindre 80%
+      thresholds: {
+        lines:      70,
+        branches:   65,
+        functions:  70,
+        statements: 70,
+      },
+      include: [
+        'src/features/**/*.ts',
+        'src/hooks/**/*.ts',
+        'src/services/**/*.ts',
+        'src/utils/**/*.ts',
+      ],
+      exclude: [
+        'src/**/*.d.ts',
+        'src/test/**',
+        'src/main.tsx',
+        'src/types/**',
+        'src/store/store.ts',
+      ],
+    },
   },
   resolve: {
     alias: {

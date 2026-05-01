@@ -8,21 +8,21 @@ import { env } from '../config/env';
 import logger from '../utils/logger';
 import axios from 'axios';
 import crypto from 'crypto';
+import type Stripe from 'stripe';
+import { applyPaymentOutcome } from '../utils/syncPayment';
 
 // Conditional Stripe import
 // La clé doit commencer par sk_test_ ou sk_live_ ET avoir du contenu après le préfixe
 const stripeKeyValid = /^sk_(test|live)_\w{10,}/.test(env.STRIPE_SECRET_KEY || '');
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type StripeInstance = { paymentIntents: any; webhooks: any; refunds: any };
-let stripe: StripeInstance | null = null;
+let stripe: Stripe | null = null;
 
 if (stripeKeyValid) {
   try {
     // require dynamique — Stripe est une dépendance optionnelle
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const StripeClass = require('stripe');
-    stripe = new StripeClass(env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }) as StripeInstance;
+    stripe = new StripeClass(env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }) as Stripe;
   } catch (error) {
     logger.warn('Stripe : package non installé. Lancer : npm install stripe');
   }
@@ -59,7 +59,7 @@ export const createStripeIntent = asyncHandler(async (req: Request, res: Respons
 
   // 1️⃣ Créer le PaymentIntent Stripe EN PREMIER
   //    → si Stripe échoue, aucun enregistrement inutile en base
-  let paymentIntent: any;
+  let paymentIntent: Stripe.PaymentIntent;
   try {
     paymentIntent = await stripe.paymentIntents.create({
       amount:      stripeAmount,
@@ -114,32 +114,17 @@ export const confirmStripePayment = asyncHandler(async (req: Request, res: Respo
   // Verify with Stripe
   const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
+  payment.providerResponse = paymentIntent;
+
   if (paymentIntent.status === 'succeeded') {
-    payment.status = 'completed';
-    payment.providerResponse = paymentIntent;
-    await payment.save();
-
-    // Update Order
-    const order = await Order.findById(payment.order);
-    if (order) {
-      order.payment.status = 'completed';
-      order.payment.transactionId = paymentIntentId;
-      order.payment.paidAt = new Date();
-      order.status = 'confirmed';
-      order.statusHistory.push({
-        status: 'confirmed',
-        date: new Date(),
-        note: 'Paiement confirmé via Stripe',
-      });
-      await order.save();
-    }
-
+    await applyPaymentOutcome(payment, {
+      status:        'completed',
+      transactionId: paymentIntentId,
+      orderNote:     'Paiement confirmé via Stripe',
+    });
     ApiResponse.success(res, payment, 'Paiement confirmé avec succès');
   } else {
-    payment.status = 'failed';
-    payment.providerResponse = paymentIntent;
-    await payment.save();
-
+    await applyPaymentOutcome(payment, { status: 'failed', orderNote: 'Paiement Stripe échoué' });
     throw ApiError.badRequest('Le paiement n\'a pas abouti');
   }
 });
@@ -155,53 +140,36 @@ export const stripeWebhook = asyncHandler(async (req: Request, res: Response) =>
     throw ApiError.badRequest('Signature manquante');
   }
 
-  let event: any;
+  let event: Stripe.Event;
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, env.STRIPE_WEBHOOK_SECRET);
-  } catch (err: any) {
-    throw ApiError.badRequest(`Erreur de vérification du webhook: ${err.message}`);
+  } catch (err: unknown) {
+    const msg = (err as Error)?.message ?? 'Erreur inconnue';
+    throw ApiError.badRequest(`Erreur de vérification du webhook: ${msg}`);
   }
-
-  const paymentIntent = event.data.object;
 
   switch (event.type) {
     case 'payment_intent.succeeded': {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
       const payment = await Payment.findOne({ transactionId: paymentIntent.id });
       if (payment && payment.status !== 'completed') {
-        payment.status = 'completed';
         payment.providerResponse = paymentIntent;
-        await payment.save();
-
-        const order = await Order.findById(payment.order);
-        if (order && order.payment.status !== 'completed') {
-          order.payment.status = 'completed';
-          order.payment.transactionId = paymentIntent.id;
-          order.payment.paidAt = new Date();
-          order.status = 'confirmed';
-          order.statusHistory.push({
-            status: 'confirmed',
-            date: new Date(),
-            note: 'Paiement confirmé via Stripe webhook',
-          });
-          await order.save();
-        }
+        await applyPaymentOutcome(payment, {
+          status:        'completed',
+          transactionId: paymentIntent.id,
+          orderNote:     'Paiement confirmé via Stripe webhook',
+        });
       }
       break;
     }
 
     case 'payment_intent.payment_failed': {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
       const payment = await Payment.findOne({ transactionId: paymentIntent.id });
       if (payment) {
-        payment.status = 'failed';
         payment.providerResponse = paymentIntent;
-        await payment.save();
-
-        const order = await Order.findById(payment.order);
-        if (order) {
-          order.payment.status = 'failed';
-          await order.save();
-        }
+        await applyPaymentOutcome(payment, { status: 'failed', orderNote: 'Paiement Stripe échoué' });
       }
       break;
     }
@@ -357,35 +325,15 @@ export const orangeMoneyCallback = asyncHandler(async (req: Request, res: Respon
   payment.providerResponse = req.body;
 
   if (status === 'SUCCESS') {
-    payment.status = 'completed';
     payment.metadata = { txnid };
-
-    const order = await Order.findById(payment.order);
-    if (order) {
-      order.payment.status = 'completed';
-      order.payment.transactionId = txnid;
-      order.payment.paidAt = new Date();
-      order.status = 'confirmed';
-      order.statusHistory.push({
-        status: 'confirmed',
-        date: new Date(),
-        note: 'Paiement confirmé via Orange Money',
-      });
-      await order.save();
-    }
-
-    await payment.save();
+    await applyPaymentOutcome(payment, {
+      status:        'completed',
+      transactionId: txnid,
+      orderNote:     'Paiement confirmé via Orange Money',
+    });
     ApiResponse.success(res, { success: true }, 'Paiement Orange Money confirmé');
   } else {
-    payment.status = 'failed';
-    await payment.save();
-
-    const order = await Order.findById(payment.order);
-    if (order) {
-      order.payment.status = 'failed';
-      await order.save();
-    }
-
+    await applyPaymentOutcome(payment, { status: 'failed', orderNote: 'Paiement Orange Money échoué' });
     ApiResponse.success(res, { success: false }, 'Paiement Orange Money échoué');
   }
 });
@@ -502,40 +450,20 @@ export const waveCallback = asyncHandler(async (req: Request, res: Response) => 
   if (type === 'checkout.completed') {
     const checkoutId = data.id;
     const payment = await Payment.findOne({ transactionId: checkoutId });
-
     if (!payment) throw ApiError.notFound('Paiement non trouvé');
 
-    payment.status = 'completed';
     payment.providerResponse = data;
-    await payment.save();
-
-    const order = await Order.findById(payment.order);
-    if (order) {
-      order.payment.status = 'completed';
-      order.payment.transactionId = checkoutId;
-      order.payment.paidAt = new Date();
-      order.status = 'confirmed';
-      order.statusHistory.push({
-        status: 'confirmed',
-        date: new Date(),
-        note: 'Paiement confirmé via Wave',
-      });
-      await order.save();
-    }
+    await applyPaymentOutcome(payment, {
+      status:        'completed',
+      transactionId: checkoutId,
+      orderNote:     'Paiement confirmé via Wave',
+    });
   } else if (type === 'checkout.failed') {
     const checkoutId = data.id;
     const payment = await Payment.findOne({ transactionId: checkoutId });
-
     if (payment) {
-      payment.status = 'failed';
       payment.providerResponse = data;
-      await payment.save();
-
-      const order = await Order.findById(payment.order);
-      if (order) {
-        order.payment.status = 'failed';
-        await order.save();
-      }
+      await applyPaymentOutcome(payment, { status: 'failed', orderNote: 'Paiement Wave échoué' });
     }
   }
 

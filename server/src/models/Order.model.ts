@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { ORDER_STATUS, PAYMENT_STATUS, PAYMENT_METHODS } from '@shared/constants/orderStatus';
 
 export interface IOrder extends Document {
   orderNumber: string;
@@ -89,16 +90,16 @@ const OrderSchema = new Schema<IOrder>({
     total: { type: Number, required: true },
   },
   payment: {
-    method: { type: String, enum: ['stripe', 'paypal', 'orange_money', 'wave', 'free_money', 'cash_on_delivery'], required: true },
-    status: { type: String, enum: ['pending', 'processing', 'completed', 'failed', 'refunded'], default: 'pending' },
+    method: { type: String, enum: Object.values(PAYMENT_METHODS), required: true },
+    status: { type: String, enum: Object.values(PAYMENT_STATUS), default: PAYMENT_STATUS.PENDING },
     transactionId: String,
     paidAt: Date,
     metadata: Schema.Types.Mixed,
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned', 'refunded'],
-    default: 'pending',
+    enum: Object.values(ORDER_STATUS),
+    default: ORDER_STATUS.PENDING,
     index: true,
   },
   statusHistory: [{
@@ -126,6 +127,7 @@ OrderSchema.index({ status: 1, createdAt: -1 });
 OrderSchema.index({ user: 1, status: 1, createdAt: -1 });     // filtre mes commandes par statut
 OrderSchema.index({ 'payment.status': 1 });
 OrderSchema.index({ 'payment.method': 1, createdAt: -1 });    // analytics par méthode de paiement
+OrderSchema.index({ 'payment.status': 1, createdAt: -1 }); // analytics paiement + date
 
 OrderSchema.pre('validate', function (next) {
   if (!this.orderNumber) {

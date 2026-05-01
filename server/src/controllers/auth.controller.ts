@@ -6,7 +6,7 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/generateToken';
-import { sendEmail, emailTemplates } from '../utils/sendEmail';
+import { emailService } from '../services/email.service';
 import { env } from '../config/env';
 import { redis } from '../config/redis';
 
@@ -45,8 +45,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   });
 
   try {
-    const template = emailTemplates.welcome(firstName);
-    await sendEmail({ to: email, ...template });
+    await emailService.sendWelcome(email, firstName);
   } catch {
     // Email failure shouldn't block registration
   }
@@ -173,8 +172,7 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 
   const resetUrl = `${env.CLIENT_URL}/reset-password/${resetToken}`;
   try {
-    const template = emailTemplates.resetPassword(user.firstName, resetUrl);
-    await sendEmail({ to: email, ...template });
+    await emailService.sendResetPassword(email, user.firstName, resetUrl);
   } catch {
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createOrder, getMyOrders, getOrderById, trackOrder, cancelOrder, getAllOrders, updateOrderStatus, exportOrdersCSV } from '../controllers/order.controller';
+import { createOrder, getMyOrders, getOrderById, trackOrder, cancelOrder, getAllOrders, updateOrderStatus, updateOrderTracking, updateOrderNotes, exportOrdersCSV } from '../controllers/order.controller';
 import { protect } from '../middleware/auth.middleware';
 import { adminOnly } from '../middleware/admin.middleware';
 import { validate } from '../middleware/validate.middleware';
@@ -245,6 +245,8 @@ router.get('/', adminOnly, orderQueryValidator, validate, getAllOrders);
  *       404:
  *         description: Commande non trouvée
  */
-router.put('/:id/status', adminOnly, updateOrderStatusValidator, validate, updateOrderStatus);
+router.put('/:id/status',   adminOnly, updateOrderStatusValidator, validate, updateOrderStatus);
+router.put('/:id/tracking', adminOnly, updateOrderTracking);
+router.put('/:id/notes',    adminOnly, updateOrderNotes);
 
 export default router;

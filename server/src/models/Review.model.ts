@@ -26,7 +26,7 @@ const ReviewSchema = new Schema<IReview>({
   images: [{ url: String, publicId: String }],
   isVerifiedPurchase: { type: Boolean, default: false },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-  isApproved: { type: Boolean, default: false },
+  isApproved: { type: Boolean, default: false }, // dérivé de status — ne jamais écrire directement
   helpfulCount: { type: Number, default: 0 },
   reportCount: { type: Number, default: 0 },
   adminReply: {
@@ -39,5 +39,13 @@ ReviewSchema.index({ product: 1, createdAt: -1 });
 ReviewSchema.index({ user: 1, product: 1 }, { unique: true });
 ReviewSchema.index({ status: 1, product: 1 });                        // avis par statut et produit
 ReviewSchema.index({ product: 1, isApproved: 1, createdAt: -1 });    // agrégation rating approuvé
+
+// Maintient isApproved en phase avec status — source de vérité unique
+ReviewSchema.pre('save', function (next) {
+  if (this.isModified('status')) {
+    this.isApproved = this.status === 'approved';
+  }
+  next();
+});
 
 export default mongoose.model<IReview>('Review', ReviewSchema);

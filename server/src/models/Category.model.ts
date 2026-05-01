@@ -10,6 +10,7 @@ export interface ICategory extends Document {
   level: number;
   order: number;
   isActive: boolean;
+  isFeatured: boolean;
   productCount: number;
   seoTitle?: string;
   seoDescription?: string;
@@ -31,6 +32,7 @@ const CategorySchema = new Schema<ICategory>({
   level: { type: Number, default: 0 },
   order: { type: Number, default: 0 },
   isActive: { type: Boolean, default: true },
+  isFeatured: { type: Boolean, default: false },
   productCount: { type: Number, default: 0 },
   seoTitle: String,
   seoDescription: String,
@@ -43,5 +45,6 @@ const CategorySchema = new Schema<ICategory>({
 }, { timestamps: true });
 
 CategorySchema.index({ parent: 1, order: 1 });
+CategorySchema.index({ isActive: 1, order: 1 });           // catalogue actif trié
 
 export default mongoose.model<ICategory>('Category', CategorySchema);

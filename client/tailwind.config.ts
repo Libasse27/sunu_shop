@@ -66,10 +66,16 @@ export default {
       borderRadius: {
         card:  '8px',
         modal: '12px',
+        xl:    '16px',
         pill:  '24px',
       },
       borderWidth: {
         '1.5': '1.5px',
+      },
+      boxShadow: {
+        cta:  '0 6px 20px rgba(0, 154, 68, 0.35)',
+        gold: '0 6px 20px rgba(252, 209, 22, 0.40)',
+        red:  '0 6px 20px rgba(227, 27, 35, 0.30)',
       },
     },
   },

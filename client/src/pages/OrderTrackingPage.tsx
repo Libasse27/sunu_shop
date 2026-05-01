@@ -9,29 +9,32 @@ import { formatPrice } from '../utils/formatPrice';
 import toast from 'react-hot-toast';
 
 interface OrderItem {
-  product: {
-    name: string;
-    images: { url: string }[];
-  };
+  name: string;
+  image: string;
   quantity: number;
   price: number;
+  subtotal: number;
 }
 
 interface Order {
   orderNumber: string;
   status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   items: OrderItem[];
-  subtotal: number;
-  shippingCost: number;
-  total: number;
+  pricing: {
+    subtotal: number;
+    shippingCost: number;
+    total: number;
+  };
   shippingAddress: {
     fullName: string;
     phone: string;
-    address: string;
+    street: string;
     city: string;
     country: string;
   };
-  trackingNumber?: string;
+  shipping?: {
+    trackingNumber?: string;
+  };
   createdAt: string;
   statusHistory?: {
     status: string;
@@ -90,8 +93,10 @@ export default function OrderTrackingPage() {
     try {
       const { data } = await api.get(`/orders/track/${orderNumber.trim()}`);
       setOrder(data.data);
-    } catch (err: any) {
-      const message = err.response?.data?.message || 'Commande introuvable. Vérifiez le numéro et réessayez.';
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Commande introuvable. Vérifiez le numéro et réessayez.';
       setError(message);
       toast.error(message);
     } finally {
@@ -277,10 +282,10 @@ export default function OrderTrackingPage() {
                 </div>
 
                 {/* Tracking Number */}
-                {order.trackingNumber && (
+                {order.shipping?.trackingNumber && (
                   <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: 'rgba(0,154,68,0.08)' }}>
                     <p className="text-sm text-gray-500 mb-1">Numéro de suivi</p>
-                    <p className="font-bold mb-0 font-mono" style={{ color: '#003D1C' }}>{order.trackingNumber}</p>
+                    <p className="font-bold mb-0 font-mono" style={{ color: '#003D1C' }}>{order.shipping.trackingNumber}</p>
                   </div>
                 )}
               </div>
@@ -317,16 +322,16 @@ export default function OrderTrackingPage() {
                       style={{ borderTop: index > 0 ? '1px solid #f3f4f6' : undefined }}
                     >
                       <img
-                        src={item.product.images?.[0]?.url || '/placeholder.png'}
-                        alt={item.product.name}
+                        src={item.image || '/placeholder.png'}
+                        alt={item.name}
                         className="rounded-lg object-cover bg-gray-50 shrink-0"
                         style={{ width: 80, height: 80, objectFit: 'cover' }}
                       />
                       <div className="flex-1">
-                        <p className="font-medium mb-1">{item.product.name}</p>
+                        <p className="font-medium mb-1">{item.name}</p>
                         <p className="text-sm text-gray-500 mb-0">Quantité : {item.quantity}</p>
                       </div>
-                      <p className="font-bold mb-0">{formatPrice(item.price * item.quantity)}</p>
+                      <p className="font-bold mb-0">{formatPrice(item.subtotal)}</p>
                     </div>
                   ))}
                 </div>
@@ -335,17 +340,17 @@ export default function OrderTrackingPage() {
                 <div className="mt-6 pt-4 border-t flex flex-col gap-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Sous-total</span>
-                    <span>{formatPrice(order.subtotal)}</span>
+                    <span>{formatPrice(order.pricing.subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Frais de livraison</span>
                     <span>
-                      {order.shippingCost === 0 ? 'Gratuit' : formatPrice(order.shippingCost)}
+                      {order.pricing.shippingCost === 0 ? 'Gratuit' : formatPrice(order.pricing.shippingCost)}
                     </span>
                   </div>
                   <div className="flex justify-between text-lg font-bold pt-2 border-t">
                     <span>Total</span>
-                    <span style={{ color: '#009A44' }}>{formatPrice(order.total)}</span>
+                    <span style={{ color: '#009A44' }}>{formatPrice(order.pricing.total)}</span>
                   </div>
                 </div>
               </div>
@@ -359,7 +364,7 @@ export default function OrderTrackingPage() {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="font-medium mb-1">{order.shippingAddress.fullName}</p>
                   <p className="text-sm text-gray-500 mb-1">{order.shippingAddress.phone}</p>
-                  <p className="text-sm text-gray-500 mb-1">{order.shippingAddress.address}</p>
+                  <p className="text-sm text-gray-500 mb-1">{order.shippingAddress.street}</p>
                   <p className="text-sm text-gray-500 mb-0">
                     {order.shippingAddress.city}, {order.shippingAddress.country}
                   </p>

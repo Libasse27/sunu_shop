@@ -38,12 +38,16 @@ export const toggleWishlistAsync = createAsyncThunk(
     { productId }: { productId: string; product?: Product },
     { getState }
   ) => {
+    // getState() is called after the `pending` handler has already applied the
+    // optimistic toggle, so "isNowWished" reflects the POST-toggle state:
+    //   true  → item was absent, we just added it  → call POST
+    //   false → item was present, we just removed it → call DELETE
     const { wishlist } = getState() as RootState;
-    const wasWished = wishlist.items.includes(productId);
-    if (wasWished) {
-      await api.delete(`/wishlist/${productId}`);
-    } else {
+    const isNowWished = wishlist.items.includes(productId);
+    if (isNowWished) {
       await api.post(`/wishlist/${productId}`);
+    } else {
+      await api.delete(`/wishlist/${productId}`);
     }
   }
 );

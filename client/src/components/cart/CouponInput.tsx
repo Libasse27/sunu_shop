@@ -6,6 +6,7 @@ import { applyCoupon, removeCoupon, selectCartTotal } from '../../features/cart/
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { formatPrice } from '../../utils/formatPrice';
+import { getApiError } from '../../utils/getApiError';
 
 export default function CouponInput() {
   const [code, setCode] = useState('');
@@ -31,8 +32,8 @@ export default function CouponInput() {
       }));
       toast.success(`Code promo "${couponData.code}" appliqué ! −${formatPrice(couponData.discount)}`);
       setCode('');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Code promo invalide');
+    } catch (err: unknown) {
+      toast.error(getApiError(err, 'Code promo invalide'));
     }
     setIsLoading(false);
   };

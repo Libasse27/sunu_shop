@@ -57,7 +57,7 @@ export const getAllReviews = asyncHandler(async (req: Request, res: Response) =>
   const { page, limit } = getPagination(req.query);
   const { status, search } = req.query;
 
-  const filter: any = {};
+  const filter: Record<string, unknown> = {};
   if (status && status !== 'all') filter.status = status;
   if (search) filter.$text = { $search: search as string };
 

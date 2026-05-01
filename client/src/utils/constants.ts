@@ -1,5 +1,5 @@
 // ─── Site identity ────────────────────────────────────────────────────────────
-export const SITE_NAME = 'TechAfrique';
+export const SITE_NAME = 'Sunu Shop';
 export const SITE_DESCRIPTION = 'Boutique en ligne de matériel informatique, électronique, électroménager et téléphonie';
 export const SITE_URL = 'https://sunushop.sn';
 
@@ -21,7 +21,7 @@ export const SOCIAL_LINKS = {
   facebook: 'https://facebook.com/sunushop',
   instagram: 'https://instagram.com/sunushop',
   twitter: 'https://twitter.com/sunushop',
-  whatsapp: `https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=Bonjour TechAfrique, j'ai une question.`,
+  whatsapp: `https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=Bonjour Sunu Shop, j'ai une question.`,
 };
 
 // ─── Categories nav ───────────────────────────────────────────────────────────
@@ -32,7 +32,6 @@ export const CATEGORIES_NAV = [
   { name: 'Électroménager', slug: 'electromenager', icon: '🏠' },
   { name: 'Accessoires', slug: 'accessoires', icon: '🖱️' },
   { name: 'Gaming', slug: 'gaming', icon: '🎮' },
-  { name: 'Caméra & Surveillance', slug: 'cameras', icon: '📷' },
 ];
 
 // ─── Payment methods ─────────────────────────────────────────────────────────

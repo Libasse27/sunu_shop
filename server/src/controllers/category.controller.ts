@@ -8,12 +8,17 @@ import { createSlug } from '../utils/slugify';
 export const getCategories = asyncHandler(async (_req: Request, res: Response) => {
   const categories = await Category.find({ isActive: true }).sort({ order: 1 }).lean();
 
-  // Build tree
-  const rootCategories = categories.filter(c => !c.parent);
-  const tree = rootCategories.map(cat => ({
-    ...cat,
-    children: categories.filter(c => c.parent?.toString() === cat._id.toString()),
-  }));
+  // Build tree O(n) via Map — évite le O(n²) du filter-in-map
+  const byId = new Map<string, any>();
+  for (const cat of categories) byId.set(cat._id.toString(), { ...cat, children: [] });
+  const tree: any[] = [];
+  for (const cat of byId.values()) {
+    if (cat.parent) {
+      byId.get(cat.parent.toString())?.children.push(cat);
+    } else {
+      tree.push(cat);
+    }
+  }
 
   ApiResponse.success(res, tree);
 });
@@ -28,11 +33,19 @@ export const getCategoryBySlug = asyncHandler(async (req: Request, res: Response
 
 export const getCategoryTree = asyncHandler(async (_req: Request, res: Response) => {
   const categories = await Category.find({ isActive: true }).sort({ order: 1 }).lean();
-  const roots = categories.filter(c => !c.parent);
-  const tree = roots.map(root => ({
-    ...root,
-    children: categories.filter(c => c.parent?.toString() === root._id.toString()),
-  }));
+
+  // Build tree O(n) via Map — évite le O(n²) du filter-in-map
+  const byId = new Map<string, any>();
+  for (const cat of categories) byId.set(cat._id.toString(), { ...cat, children: [] });
+  const tree: any[] = [];
+  for (const cat of byId.values()) {
+    if (cat.parent) {
+      byId.get(cat.parent.toString())?.children.push(cat);
+    } else {
+      tree.push(cat);
+    }
+  }
+
   ApiResponse.success(res, tree);
 });
 

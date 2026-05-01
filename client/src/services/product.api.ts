@@ -15,32 +15,37 @@ export interface ProductFilters {
 
 export interface ProductsResponse {
   data: Product[];
-  pagination: { total: number; page: number; pages: number; limit: number };
+  pagination: { total: number; page: number; totalPages: number; limit: number };
 }
 
 export const productApi = {
-  getProducts: (filters: ProductFilters = {}): Promise<{ success: boolean; data: Product[]; pagination: ProductsResponse['pagination'] }> =>
+  getProducts: (filters: ProductFilters = {}, signal?: AbortSignal): Promise<{ success: boolean; data: Product[]; pagination: ProductsResponse['pagination'] }> =>
     api
-      .get<{ success: boolean; data: Product[]; pagination: ProductsResponse['pagination'] }>('/products', { params: filters })
+      .get<{ success: boolean; data: Product[]; pagination: ProductsResponse['pagination'] }>('/products', { params: filters, signal })
       .then((r) => r.data),
 
-  getProductBySlug: (slug: string): Promise<{ success: boolean; data: Product }> =>
+  getProductBySlug: (slug: string, signal?: AbortSignal): Promise<{ success: boolean; data: Product }> =>
     api
-      .get<{ success: boolean; data: Product }>(`/products/slug/${slug}`)
+      .get<{ success: boolean; data: Product }>(`/products/slug/${slug}`, { signal })
       .then((r) => r.data),
 
-  getFeatured: (): Promise<{ success: boolean; data: Product[] }> =>
+  getFeatured: (signal?: AbortSignal): Promise<{ success: boolean; data: Product[] }> =>
     api
-      .get<{ success: boolean; data: Product[] }>('/products/featured')
+      .get<{ success: boolean; data: Product[] }>('/products/featured', { signal })
       .then((r) => r.data),
 
-  getNewArrivals: (): Promise<{ success: boolean; data: Product[] }> =>
+  getNewArrivals: (signal?: AbortSignal): Promise<{ success: boolean; data: Product[] }> =>
     api
-      .get<{ success: boolean; data: Product[] }>('/products/new-arrivals')
+      .get<{ success: boolean; data: Product[] }>('/products/new-arrivals', { signal })
       .then((r) => r.data),
 
-  getBestSellers: (): Promise<{ success: boolean; data: Product[] }> =>
+  getBestSellers: (signal?: AbortSignal): Promise<{ success: boolean; data: Product[] }> =>
     api
-      .get<{ success: boolean; data: Product[] }>('/products/best-sellers')
+      .get<{ success: boolean; data: Product[] }>('/products/best-sellers', { signal })
+      .then((r) => r.data),
+
+  getRelated: (productId: string, signal?: AbortSignal): Promise<{ success: boolean; data: Product[] }> =>
+    api
+      .get<{ success: boolean; data: Product[] }>(`/products/${productId}/related`, { signal })
       .then((r) => r.data),
 };

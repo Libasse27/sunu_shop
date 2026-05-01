@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Mail, Phone, MapPin, Send, MessageCircle, Clock, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { WHATSAPP_NUMBER } from '../utils/constants';
+import { WHATSAPP_NUMBER, SITE_URL } from '../utils/constants';
+import api from '../services/api';
+import { getApiError } from '../utils/getApiError';
 
 const contactCards = [
   {
@@ -39,21 +41,37 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
-    setTimeout(() => {
+    try {
+      await api.post('/contact', form);
       toast.success('Message envoyé ! Nous vous répondrons sous 24h.');
       setForm({ name: '', email: '', subject: '', message: '' });
+    } catch (err: unknown) {
+      toast.error(getApiError(err, "Impossible d'envoyer le message. Réessayez ou contactez-nous via WhatsApp."));
+    } finally {
       setSending(false);
-    }, 800);
+    }
   };
 
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=Bonjour TechAfrique, je voudrais avoir des informations.`;
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=Bonjour Sunu Shop, je voudrais avoir des informations.`;
 
   return (
     <>
-      <Helmet><title>Contact — TechAfrique</title></Helmet>
+      <Helmet>
+        <title>Contact — Sunu Shop</title>
+        <meta name="description" content="Contactez Sunu Shop à Dakar. WhatsApp, email ou téléphone. Devis réparation gratuit. Horaires : lun–ven 8h-20h, sam 9h-18h." />
+        <link rel="canonical" href={`${SITE_URL}/contact`} />
+        <meta property="og:type"        content="website" />
+        <meta property="og:site_name"   content="Sunu Shop" />
+        <meta property="og:title"       content="Contactez Sunu Shop — Dakar" />
+        <meta property="og:description" content="Boutique tech à Dakar. WhatsApp disponible, devis gratuit, livraison rapide." />
+        <meta property="og:url"         content={`${SITE_URL}/contact`} />
+        <meta name="twitter:card"  content="summary" />
+        <meta name="twitter:site"  content="@sunushop" />
+        <meta name="twitter:title" content="Contact — Sunu Shop Dakar" />
+      </Helmet>
 
       {/* ── Hero ── */}
       <section className="relative py-12 overflow-hidden" style={{ backgroundColor: '#003D1C' }}>

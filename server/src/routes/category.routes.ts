@@ -144,7 +144,7 @@ router.get('/:slug', cacheMiddleware(600), getCategoryBySlug);
  *                 type: object
  *                 properties:
  *                   url: { type: string }
- *                   alt: { type: string }
+ *                   publicId: { type: string }
  *               sortOrder: { type: integer, default: 0 }
  *               isActive: { type: boolean, default: true }
  *               isFeatured: { type: boolean, default: false }

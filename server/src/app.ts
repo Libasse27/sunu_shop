@@ -39,8 +39,9 @@ import notificationRoutes from './routes/notification.routes';
 import serviceRoutes from './routes/service.routes';
 import bannerRoutes from './routes/banner.routes';
 import announcementRoutes from './routes/announcement.routes';
-import promoBannerRoutes from './routes/promoBanner.routes';
 import newsletterRoutes from './routes/newsletter.routes';
+import paymentSettingsRoutes from './routes/paymentSettings.routes';
+import contactRoutes from './routes/contact.routes';
 import sitemapRoutes from './routes/sitemap.routes';
 
 const app = express();
@@ -175,8 +176,9 @@ app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/services', serviceRoutes);
 app.use('/api/v1/banners', bannerRoutes);
 app.use('/api/v1/announcements', announcementRoutes);
-app.use('/api/v1/promo-banners', promoBannerRoutes);
 app.use('/api/v1/newsletter', newsletterRoutes);
+app.use('/api/v1/payment-settings', paymentSettingsRoutes);
+app.use('/api/v1/contact', contactRoutes);
 
 // SEO — sitemap et robots.txt (servis à la racine, pas sous /api)
 app.use('/', sitemapRoutes);

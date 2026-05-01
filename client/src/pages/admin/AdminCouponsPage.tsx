@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Plus, Edit, Trash2, X, Tag, Copy, Check, Ticket } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Copy, Check, Ticket } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminEmptyState from '../../components/admin/AdminEmptyState';

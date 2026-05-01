@@ -20,6 +20,7 @@ export const getMyOrders = asyncHandler(async (req: Request, res: Response) => {
 export const getOrderById = asyncHandler(async (req: Request, res: Response) => {
   const order = await Order.findById(req.params.id)
     .populate('user', 'firstName lastName email')
+    .populate('items.product', 'supplier sku')
     .lean<IOrder>();
 
   if (!order) throw ApiError.notFound('Commande non trouvée');
@@ -33,7 +34,7 @@ export const getOrderById = asyncHandler(async (req: Request, res: Response) => 
 
 export const trackOrder = asyncHandler(async (req: Request, res: Response) => {
   const order = await Order.findOne({ orderNumber: req.params.orderNumber })
-    .select('orderNumber status statusHistory shipping pricing items createdAt');
+    .select('orderNumber status statusHistory shipping shippingAddress pricing items createdAt');
 
   if (!order) throw ApiError.notFound('Commande non trouvée');
   ApiResponse.success(res, order);
@@ -49,20 +50,22 @@ export const getAllOrders = asyncHandler(async (req: Request, res: Response) => 
   const { page, limit } = getPagination(req.query);
   const { status, paymentStatus, paymentMethod, search, startDate, endDate } = req.query;
 
-  const filter: any = {};
+  const filter: Record<string, unknown> = {};
   if (status) filter.status = status;
   if (paymentStatus) filter['payment.status'] = paymentStatus;
   if (paymentMethod) filter['payment.method'] = paymentMethod;
   if (search) filter.orderNumber = buildSearchRegex(search as string);
   if (startDate || endDate) {
-    filter.createdAt = {};
-    if (startDate) filter.createdAt.$gte = new Date(startDate as string);
-    if (endDate) filter.createdAt.$lte = new Date(endDate as string);
+    const dateRange: { $gte?: Date; $lte?: Date } = {};
+    if (startDate) dateRange.$gte = new Date(startDate as string);
+    if (endDate)   dateRange.$lte = new Date(endDate as string);
+    filter.createdAt = dateRange;
   }
 
   const total = await Order.countDocuments(filter);
   const orders = await Order.find(filter)
     .populate('user', 'firstName lastName email')
+    .populate('items.product', 'supplier sku')
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit)
@@ -88,6 +91,7 @@ export const exportOrdersCSV = asyncHandler(async (req: Request, res: Response) 
   }
 
   const orders = await Order.find(filter)
+    .select('orderNumber status createdAt pricing.total payment.method payment.status user')
     .populate('user', 'firstName lastName email')
     .sort({ createdAt: -1 })
     .lean();
@@ -157,4 +161,26 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
 
   await order.save();
   ApiResponse.success(res, order, 'Statut mis à jour');
+});
+
+export const updateOrderTracking = asyncHandler(async (req: Request, res: Response) => {
+  const { trackingNumber, carrier } = req.body;
+  const order = await Order.findByIdAndUpdate(
+    req.params.id,
+    { $set: { 'shipping.trackingNumber': trackingNumber, ...(carrier ? { 'shipping.carrier': carrier } : {}) } },
+    { new: true },
+  );
+  if (!order) throw ApiError.notFound('Commande non trouvée');
+  ApiResponse.success(res, order, 'Numéro de suivi mis à jour');
+});
+
+export const updateOrderNotes = asyncHandler(async (req: Request, res: Response) => {
+  const { adminNote } = req.body;
+  const order = await Order.findByIdAndUpdate(
+    req.params.id,
+    { $set: { notes: adminNote } },
+    { new: true },
+  );
+  if (!order) throw ApiError.notFound('Commande non trouvée');
+  ApiResponse.success(res, order, 'Note enregistrée');
 });

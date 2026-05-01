@@ -40,7 +40,6 @@ export interface Product {
   currency: string;
   images: ProductImage[];
   category: { _id: string; name: string; slug: string };
-  subCategory?: { _id: string; name: string; slug: string };
   tags: string[];
   variants: Variant[];
   specifications: Array<{ key: string; value: string }>;
@@ -57,6 +56,11 @@ export interface Product {
   isBestSeller: boolean;
   isOnSale: boolean;
   discountPercentage: number;
+  costPrice?: number;
+  lowStockThreshold?: number;
+  weight?: number;
+  saleStartDate?: string;
+  saleEndDate?: string;
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string[];
@@ -71,11 +75,13 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
-  image?: { url: string };
-  icon?: string;
+  image?: { url: string; publicId?: string };
+  icon?: string;       // emoji ou classe icône (ex: '💻', '📱')
   parent: string | null;
   level: number;
   order: number;
+  isActive: boolean;
+  isFeatured?: boolean;
   children?: Category[];
   productCount: number;
 }

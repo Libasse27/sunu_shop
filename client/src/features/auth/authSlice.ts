@@ -140,12 +140,8 @@ const authSlice = createSlice({
         state.error = null;
         state.isLoading = false;
       })
-      .addCase(restoreSession.fulfilled, (state, action) => {
+      .addCase(restoreSession.fulfilled, (_, action) => {
         tokenStore.set(action.payload.accessToken);
-        if (action.payload.user) {
-          state.user = action.payload.user;
-          localStorage.setItem('user', JSON.stringify(action.payload.user));
-        }
       })
       .addCase(restoreSession.rejected, (state) => {
         // Cookie expiré ou absent — déconnexion propre sans redirection forcée.

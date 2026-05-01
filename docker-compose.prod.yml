@@ -12,7 +12,7 @@
 # Commande : docker compose -f docker-compose.prod.yml up -d
 # =============================================================
 
-name: techafrique-prod
+name: sunushop-prod
 
 services:
 
@@ -22,19 +22,19 @@ services:
   # ============================================================
   mongo:
     image: mongo:7
-    container_name: techafrique-mongo
+    container_name: sunushop-mongo
     restart: always
     command: mongod --replSet rs0 --bind_ip_all --auth --keyFile /data/mongo-keyfile
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE:      techafrique
+      MONGO_INITDB_DATABASE:      sunushop
     volumes:
       - mongo_data:/data/db
       - mongo_config:/data/configdb
       - mongo_keyfile:/data/mongo-keyfile:ro
     networks:
-      - techafrique-internal
+      - sunushop-internal
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 30s
@@ -48,13 +48,13 @@ services:
   # Initialise le replica set une seule fois au premier démarrage
   mongo-rs-init:
     image: mongo:7
-    container_name: techafrique-mongo-rs-init
+    container_name: sunushop-mongo-rs-init
     restart: "no"
     depends_on:
       mongo:
         condition: service_healthy
     networks:
-      - techafrique-internal
+      - sunushop-internal
     command: >
       mongosh --host mongo -u ${MONGO_ROOT_USER} -p ${MONGO_ROOT_PASSWORD} --authenticationDatabase admin --eval
       'try { rs.status(); print("RS déjà initialisé"); } catch(e) {
@@ -67,7 +67,7 @@ services:
   # ============================================================
   redis:
     image: redis:7-alpine
-    container_name: techafrique-redis
+    container_name: sunushop-redis
     restart: always
     command: >
       redis-server
@@ -82,7 +82,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - techafrique-internal
+      - sunushop-internal
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
@@ -99,25 +99,25 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.server
-    image: techafrique-server:latest
-    container_name: techafrique-api
+    image: sunushop-server:latest
+    container_name: sunushop-api
     restart: always
     env_file:
       - .env.production
     environment:
       NODE_ENV:    production
       PORT:        5000
-      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/techafrique?authSource=admin&replicaSet=rs0
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/sunushop?authSource=admin&replicaSet=rs0
       REDIS_URL:   redis://:${REDIS_PASSWORD}@redis:6379
-      CLIENT_URL:  https://www.techafrique.sn
-      SERVER_URL:  https://www.techafrique.sn
+      CLIENT_URL:  https://www.sunushop.sn
+      SERVER_URL:  https://www.sunushop.sn
     depends_on:
       mongo:
         condition: service_healthy
       redis:
         condition: service_healthy
     networks:
-      - techafrique-internal
+      - sunushop-internal
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:5000/api/health"]
       interval: 30s
@@ -136,15 +136,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.server
-    image: techafrique-server:latest
-    container_name: techafrique-worker
+    image: sunushop-server:latest
+    container_name: sunushop-worker
     restart: always
     command: ["node", "dist/worker.js"]
     env_file:
       - .env.production
     environment:
       NODE_ENV:    production
-      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/techafrique?authSource=admin&replicaSet=rs0
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/sunushop?authSource=admin&replicaSet=rs0
       REDIS_URL:   redis://:${REDIS_PASSWORD}@redis:6379
     depends_on:
       mongo:
@@ -152,7 +152,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - techafrique-internal
+      - sunushop-internal
     logging:
       driver: json-file
       options: { max-size: "10m", max-file: "3" }
@@ -164,8 +164,8 @@ services:
     build:
       context: .
       dockerfile: nginx/Dockerfile
-    image: techafrique-nginx:latest
-    container_name: techafrique-nginx
+    image: sunushop-nginx:latest
+    container_name: sunushop-nginx
     restart: always
     ports:
       - "80:80"
@@ -180,7 +180,7 @@ services:
       server:
         condition: service_healthy
     networks:
-      - techafrique-internal
+      - sunushop-internal
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/api/health"]
       interval: 30s
@@ -195,7 +195,7 @@ services:
   # ============================================================
   certbot:
     image: certbot/certbot:latest
-    container_name: techafrique-certbot
+    container_name: sunushop-certbot
     restart: unless-stopped
     volumes:
       - certbot_certs:/etc/letsencrypt
@@ -209,7 +209,7 @@ services:
         done
       "
     networks:
-      - techafrique-internal
+      - sunushop-internal
 
   # ============================================================
   # Backup MongoDB — Cron quotidien 2h00 + upload R2
@@ -218,8 +218,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backup
-    image: techafrique-backup:latest
-    container_name: techafrique-backup
+    image: sunushop-backup:latest
+    container_name: sunushop-backup
     restart: always
     environment:
       MONGO_ROOT_USER:       ${MONGO_ROOT_USER}
@@ -235,7 +235,7 @@ services:
       mongo:
         condition: service_healthy
     networks:
-      - techafrique-internal
+      - sunushop-internal
     logging:
       driver: json-file
       options: { max-size: "5m", max-file: "2" }
@@ -246,7 +246,7 @@ services:
   # ============================================================
   prometheus:
     image: prom/prometheus:latest
-    container_name: techafrique-prometheus
+    container_name: sunushop-prometheus
     restart: always
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -260,7 +260,7 @@ services:
       - ./monitoring/prometheus/metrics_token:/etc/prometheus/metrics_token:ro
       - prometheus_data:/prometheus
     networks:
-      - techafrique-internal
+      - sunushop-internal
     # Port non exposé — accès via SSH tunnel ou Grafana
     logging:
       driver: json-file
@@ -272,7 +272,7 @@ services:
   # ============================================================
   grafana:
     image: grafana/grafana:latest
-    container_name: techafrique-grafana
+    container_name: sunushop-grafana
     restart: always
     environment:
       GF_SECURITY_ADMIN_USER:     admin
@@ -287,9 +287,9 @@ services:
       GF_SMTP_USER:           "${SMTP_USER}"
       GF_SMTP_PASSWORD:       "${SMTP_PASS}"
       GF_SMTP_FROM_ADDRESS:   "${EMAIL_FROM}"
-      GF_SMTP_FROM_NAME:      "TechAfrique Monitoring"
+      GF_SMTP_FROM_NAME:      "SunuShop Monitoring"
       # Variables pour les contact points (provisioning alerting)
-      ALERT_EMAIL:              ${ALERT_EMAIL:-admin@techafrique.sn}
+      ALERT_EMAIL:              ${ALERT_EMAIL:-admin@sunushop.sn}
       ALERT_WEBHOOK_URL:        ${ALERT_WEBHOOK_URL:-}
       ALERT_TELEGRAM_BOT_TOKEN: ${ALERT_TELEGRAM_BOT_TOKEN:-}
       ALERT_TELEGRAM_CHAT_ID:   ${ALERT_TELEGRAM_CHAT_ID:-}
@@ -303,7 +303,7 @@ services:
       - prometheus
       - loki
     networks:
-      - techafrique-internal
+      - sunushop-internal
     logging:
       driver: json-file
       options: { max-size: "5m", max-file: "2" }
@@ -313,14 +313,14 @@ services:
   # ============================================================
   loki:
     image: grafana/loki:latest
-    container_name: techafrique-loki
+    container_name: sunushop-loki
     restart: always
     command: -config.file=/etc/loki/loki.yml
     volumes:
       - ./monitoring/loki/loki.yml:/etc/loki/loki.yml:ro
       - loki_data:/loki
     networks:
-      - techafrique-internal
+      - sunushop-internal
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3100/ready"]
       interval: 30s
@@ -335,7 +335,7 @@ services:
   # ============================================================
   promtail:
     image: grafana/promtail:latest
-    container_name: techafrique-promtail
+    container_name: sunushop-promtail
     restart: always
     command: -config.file=/etc/promtail/promtail.yml
     volumes:
@@ -345,7 +345,7 @@ services:
     depends_on:
       - loki
     networks:
-      - techafrique-internal
+      - sunushop-internal
     logging:
       driver: json-file
       options: { max-size: "5m", max-file: "2" }
@@ -355,7 +355,7 @@ services:
   # ============================================================
   node-exporter:
     image: prom/node-exporter:latest
-    container_name: techafrique-node-exporter
+    container_name: sunushop-node-exporter
     restart: always
     command:
       - '--path.rootfs=/host'
@@ -363,7 +363,7 @@ services:
     volumes:
       - /:/host:ro,rslave
     networks:
-      - techafrique-internal
+      - sunushop-internal
     logging:
       driver: json-file
       options: { max-size: "5m", max-file: "2" }
@@ -373,7 +373,7 @@ services:
   # ============================================================
   redis-exporter:
     image: oliver006/redis_exporter:latest
-    container_name: techafrique-redis-exporter
+    container_name: sunushop-redis-exporter
     restart: always
     environment:
       REDIS_ADDR:     redis://redis:6379
@@ -381,7 +381,7 @@ services:
     depends_on:
       - redis
     networks:
-      - techafrique-internal
+      - sunushop-internal
     logging:
       driver: json-file
       options: { max-size: "5m", max-file: "2" }
@@ -391,7 +391,7 @@ services:
   # ============================================================
   mongodb-exporter:
     image: percona/mongodb_exporter:0.40
-    container_name: techafrique-mongo-exporter
+    container_name: sunushop-mongo-exporter
     restart: always
     command:
       - '--mongodb.uri=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/admin'
@@ -400,7 +400,7 @@ services:
       mongo:
         condition: service_healthy
     networks:
-      - techafrique-internal
+      - sunushop-internal
     logging:
       driver: json-file
       options: { max-size: "5m", max-file: "2" }
@@ -426,5 +426,5 @@ volumes:
 # Réseau interne — seul Nginx + Grafana exposent des ports
 # ==============================================================
 networks:
-  techafrique-internal:
+  sunushop-internal:
     driver: bridge

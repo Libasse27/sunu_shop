@@ -9,7 +9,7 @@ import { productApi, ProductFilters } from '../services/product.api';
 export const useProducts = (filters: ProductFilters = {}) => {
   return useQuery({
     queryKey: ['products', filters],
-    queryFn: () => productApi.getProducts(filters),
+    queryFn: ({ signal }) => productApi.getProducts(filters, signal),
     placeholderData: keepPreviousData,
   });
 };
@@ -21,7 +21,21 @@ export const useProducts = (filters: ProductFilters = {}) => {
 export const useProduct = (slug: string) => {
   return useQuery({
     queryKey: ['product', slug],
-    queryFn: () => productApi.getProductBySlug(slug),
+    queryFn: ({ signal }) => productApi.getProductBySlug(slug, signal),
     enabled: Boolean(slug),
+    staleTime: 5 * 60 * 1000, // 5 min — fiche produit rarement modifiée
+  });
+};
+
+/**
+ * Hook pour les produits similaires d'une fiche produit.
+ * Dépend de l'ID du produit affiché — désactivé tant qu'il n'est pas connu.
+ */
+export const useRelatedProducts = (productId: string) => {
+  return useQuery({
+    queryKey: ['related', productId],
+    queryFn: ({ signal }) => productApi.getRelated(productId, signal),
+    enabled: Boolean(productId),
+    staleTime: 5 * 60 * 1000,
   });
 };

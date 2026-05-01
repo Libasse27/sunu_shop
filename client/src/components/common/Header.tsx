@@ -1,18 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Heart, ShoppingCart, User, Menu, X, ChevronDown, LogOut, Globe, Wrench, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Menu as HMenu, Transition, Popover } from '@headlessui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Fragment } from 'react';
-import { RootState } from '../../store/store';
+import { RootState, useAppDispatch } from '../../store/store';
 import { selectCartCount, openCartDrawer } from '../../features/cart/cartSlice';
 import { logout } from '../../features/auth/authSlice';
 import { CATEGORIES_NAV, FREE_SHIPPING_THRESHOLD } from '../../utils/constants';
 import { formatPrice } from '../../utils/formatPrice';
 import api from '../../services/api';
 import SearchBar from './SearchBar';
+import NotificationBell from './NotificationBell';
 
 interface Announcement {
   _id: string;
@@ -96,7 +97,7 @@ export default function Header() {
     localStorage.setItem('language', newLang);
   };
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
   const cartCount = useSelector(selectCartCount);
@@ -249,7 +250,7 @@ export default function Header() {
 
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 shrink-0 no-underline">
-              <img src="/logo.svg" alt="TechAfrique" className="rounded-lg" style={{ height: '2.75rem', width: 'auto', maxWidth: '11rem' }} />
+              <img src="/logo.svg" alt="Sunu Shop" className="rounded-lg" style={{ height: '2.75rem', width: 'auto', maxWidth: '11rem' }} />
             </Link>
 
             {/* ── Search bar (prominent, centered) ── */}
@@ -292,6 +293,9 @@ export default function Header() {
                   </span>
                 )}
               </button>
+
+              {/* Notifications — uniquement pour les utilisateurs connectés */}
+              {user && <NotificationBell />}
 
               {/* Cart */}
               <button

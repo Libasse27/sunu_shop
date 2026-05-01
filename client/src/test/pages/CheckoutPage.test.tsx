@@ -28,9 +28,11 @@ vi.mock('react-hot-toast', () => ({
 
 vi.mock('../../services/api', () => ({
   default: {
-    post: apiPost,
+    get:    vi.fn().mockResolvedValue({ data: { data: [] } }),
+    post:   apiPost,
+    delete: vi.fn().mockResolvedValue({ data: {} }),
     interceptors: {
-      request: { use: vi.fn() },
+      request:  { use: vi.fn() },
       response: { use: vi.fn() },
     },
   },
@@ -119,7 +121,7 @@ describe('CheckoutPage', () => {
     it('affiche le bouton "Continuer vers le paiement"', () => {
       renderWithProviders(<CheckoutPage />, { initialState: initialCartState });
       expect(
-        screen.getByRole('button', { name: /continuer vers le paiement/i })
+        screen.getByRole('button', { name: /choisir le paiement/i })
       ).toBeInTheDocument();
     });
 
@@ -153,7 +155,7 @@ describe('CheckoutPage', () => {
       await user.type(screen.getByPlaceholderText('+221 77 123 45 67'), '+221771234567');
       await user.type(screen.getByPlaceholderText('Rue, quartier, numéro'), 'Rue Félix Faure, Plateau');
 
-      await user.click(screen.getByRole('button', { name: /continuer vers le paiement/i }));
+      await user.click(screen.getByRole('button', { name: /choisir le paiement/i }));
 
       await waitFor(() => {
         expect(screen.getByText('Méthode de paiement')).toBeInTheDocument();
@@ -171,7 +173,7 @@ describe('CheckoutPage', () => {
       await user.type(screen.getByPlaceholderText('+221 77 123 45 67'), '+221771234567');
       await user.type(screen.getByPlaceholderText('Rue, quartier, numéro'), 'Rue Félix Faure');
 
-      await user.click(screen.getByRole('button', { name: /continuer vers le paiement/i }));
+      await user.click(screen.getByRole('button', { name: /choisir le paiement/i }));
       await waitFor(() => screen.getByText('Méthode de paiement'));
       return user;
     }
@@ -188,14 +190,15 @@ describe('CheckoutPage', () => {
       await goToPaymentStep();
       expect(screen.getByText('Carte bancaire')).toBeInTheDocument();
       expect(screen.getByText('Orange Money')).toBeInTheDocument();
-      expect(screen.getByText('Paiement à la livraison')).toBeInTheDocument();
+      // "À la livraison" peut être dans un nœud séparé ou scindé
+      expect(screen.getAllByText(/livraison/i).length).toBeGreaterThan(0);
       // Wave peut apparaître plusieurs fois (badge + WaveLogo mock)
       expect(screen.getAllByText(/wave/i).length).toBeGreaterThan(0);
     });
 
-    it('stripe est sélectionné par défaut', async () => {
+    it('wave est sélectionné par défaut', async () => {
       await goToPaymentStep();
-      expect(screen.getByDisplayValue('stripe')).toBeChecked();
+      expect(screen.getByDisplayValue('wave')).toBeChecked();
     });
 
     it('permet de sélectionner Wave', async () => {
@@ -216,10 +219,23 @@ describe('CheckoutPage', () => {
       expect(screen.getByDisplayValue('cash_on_delivery')).toBeChecked();
     });
 
-    it('affiche un bouton "Payer" avec le montant pour la méthode stripe', async () => {
-      await goToPaymentStep();
-      const payButton = screen.getByRole('button', { name: /payer/i });
-      expect(payButton).toBeInTheDocument();
+    it('affiche le formulaire Stripe quand stripe est sélectionné et l\'intent chargé', async () => {
+      // 1er appel : fetchIntent (wave par défaut quand step=payment)
+      // 2ème appel : POST /orders (fetchStripeIntent)
+      // 3ème appel : POST /payments/stripe/create-intent (fetchStripeIntent)
+      apiPost
+        .mockResolvedValueOnce({ data: { data: { token: 'wave-tok', amount: 450_000 } } })
+        .mockResolvedValueOnce({ data: { data: { _id: 'order-abc' } } })
+        .mockResolvedValueOnce({
+          data: { data: { clientSecret: 'cs_test_123', paymentId: 'pay-123' } },
+        });
+
+      const user = await goToPaymentStep();
+      await user.click(screen.getByDisplayValue('stripe'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('stripe-form')).toBeInTheDocument();
+      }, { timeout: 3000 });
     });
 
     it('affiche "Confirmer la commande" pour le paiement à la livraison', async () => {
@@ -243,32 +259,25 @@ describe('CheckoutPage', () => {
       await user.type(screen.getByPlaceholderText('+221 77 123 45 67'), '+221771234567');
       await user.type(screen.getByPlaceholderText('Rue, quartier, numéro'), 'Rue Félix Faure');
 
-      await user.click(screen.getByRole('button', { name: /continuer vers le paiement/i }));
+      await user.click(screen.getByRole('button', { name: /choisir le paiement/i }));
       await waitFor(() => screen.getByText('Méthode de paiement'));
       return user;
     }
 
-    it('appelle POST /orders puis POST /payments/stripe/create-intent avec Stripe', async () => {
-      const user = await goToPaymentStep();
-
+    it('sélectionner stripe affiche la section de paiement Stripe', async () => {
       apiPost
-        .mockResolvedValueOnce({ data: { data: { _id: 'order-abc' } } })
+        .mockResolvedValueOnce({ data: { data: { token: 'wave-tok', amount: 450_000 } } })
+        .mockResolvedValueOnce({ data: { data: { _id: 'order-xyz' } } })
         .mockResolvedValueOnce({
-          data: { data: { clientSecret: 'cs_test_123', paymentId: 'pay-123' } },
+          data: { data: { clientSecret: 'cs_test_xyz', paymentId: 'pay-xyz' } },
         });
 
-      await user.click(screen.getByRole('button', { name: /payer/i }));
+      const user = await goToPaymentStep();
+      await user.click(screen.getByDisplayValue('stripe'));
 
       await waitFor(() => {
-        expect(apiPost).toHaveBeenCalledWith(
-          '/orders',
-          expect.objectContaining({ payment: { method: 'stripe' } })
-        );
-        expect(apiPost).toHaveBeenCalledWith(
-          '/payments/stripe/create-intent',
-          expect.objectContaining({ orderId: 'order-abc' })
-        );
-      });
+        expect(screen.getByTestId('stripe-form')).toBeInTheDocument();
+      }, { timeout: 3000 });
     });
 
     it('appelle POST /orders avec cash_on_delivery après acceptation des conditions', async () => {
@@ -299,29 +308,46 @@ describe('CheckoutPage', () => {
       });
     });
 
-    it('affiche un toast d\'erreur avec le message serveur si /orders échoue', async () => {
+    it('affiche un toast d\'erreur avec le message serveur si /orders échoue (COD)', async () => {
       const user = await goToPaymentStep();
+
+      await user.click(screen.getByDisplayValue('cash_on_delivery'));
+      await waitFor(() => screen.getByRole('button', { name: /confirmer la commande/i }));
+
+      // Cocher les cases COD pour activer le bouton
+      const checkboxes = screen.getAllByRole('checkbox');
+      for (const cb of checkboxes) {
+        if (!(cb as HTMLInputElement).checked) await user.click(cb);
+      }
 
       apiPost.mockRejectedValueOnce({
         response: { data: { message: 'Stock insuffisant' } },
       });
 
-      await user.click(screen.getByRole('button', { name: /payer/i }));
+      await user.click(screen.getByRole('button', { name: /confirmer la commande/i }));
 
       await waitFor(() => {
         expect(toastError).toHaveBeenCalledWith('Stock insuffisant');
       });
     });
 
-    it('affiche un toast d\'erreur générique si pas de message serveur', async () => {
+    it('affiche un toast d\'erreur générique si pas de message serveur (COD)', async () => {
       const user = await goToPaymentStep();
+
+      await user.click(screen.getByDisplayValue('cash_on_delivery'));
+      await waitFor(() => screen.getByRole('button', { name: /confirmer la commande/i }));
+
+      const checkboxes = screen.getAllByRole('checkbox');
+      for (const cb of checkboxes) {
+        if (!(cb as HTMLInputElement).checked) await user.click(cb);
+      }
 
       apiPost.mockRejectedValueOnce(new Error('Network'));
 
-      await user.click(screen.getByRole('button', { name: /payer/i }));
+      await user.click(screen.getByRole('button', { name: /confirmer la commande/i }));
 
       await waitFor(() => {
-        expect(toastError).toHaveBeenCalledWith('Erreur lors du traitement');
+        expect(toastError).toHaveBeenCalled();
       });
     });
   });

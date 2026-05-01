@@ -1,13 +1,13 @@
 import { useState, ReactNode } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
   LayoutDashboard, Box, ClipboardList, Users, FolderTree,
   Ticket, Star, Wrench, Menu, ArrowUpRight, LogOut, X,
-  Megaphone, Bell, Zap, Mail, ChevronLeft, ChevronRight,
+  Megaphone, Bell, Zap, Mail, ChevronLeft, ChevronRight, QrCode, TrendingUp,
 } from 'lucide-react';
 import { logout } from '../../features/auth/authSlice';
-import { RootState } from '../../store/store';
+import { RootState, useAppDispatch } from '../../store/store';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,6 +31,7 @@ const navGroups: NavGroup[] = [
     label: 'GESTION',
     items: [
       { path: '/admin', label: 'Tableau de bord', icon: LayoutDashboard, exact: true },
+      { path: '/admin/chiffre-affaires', label: "Chiffre d'affaires", icon: TrendingUp },
       { path: '/admin/produits', label: 'Produits', icon: Box },
       { path: '/admin/commandes', label: 'Commandes', icon: ClipboardList },
       { path: '/admin/clients', label: 'Clients', icon: Users },
@@ -52,6 +53,7 @@ const navGroups: NavGroup[] = [
     label: 'COMMUNICATION',
     items: [
       { path: '/admin/newsletter', label: 'Newsletter', icon: Mail },
+      { path: '/admin/paiements', label: 'Paiements QR', icon: QrCode },
     ],
   },
 ];
@@ -151,7 +153,7 @@ function SidebarContent({
   onToggleCollapse?: () => void;
   onClose?: () => void;
 }) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
 
   const initials = user

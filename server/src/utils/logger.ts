@@ -30,7 +30,7 @@ const logger = winston.createLogger({
     errors({ stack: true }),
     env.NODE_ENV === 'production' ? json() : devFormat,
   ),
-  defaultMeta: { service: 'techafrique-api' },
+  defaultMeta: { service: 'sunushop-api' },
   transports: [
     new winston.transports.Console(),
     ...(env.NODE_ENV === 'production'

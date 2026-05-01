@@ -22,9 +22,14 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Copier les scripts
-COPY scripts/backup.sh  /usr/local/bin/backup.sh
-COPY scripts/restore.sh /usr/local/bin/restore.sh
-RUN chmod +x /usr/local/bin/backup.sh /usr/local/bin/restore.sh
+COPY scripts/backup.sh      /usr/local/bin/backup.sh
+COPY scripts/restore.sh     /usr/local/bin/restore.sh
+COPY scripts/entrypoint.sh  /usr/local/bin/entrypoint.sh
+COPY scripts/test-backup.sh /usr/local/bin/test-backup.sh
+RUN chmod +x /usr/local/bin/backup.sh \
+             /usr/local/bin/restore.sh \
+             /usr/local/bin/entrypoint.sh \
+             /usr/local/bin/test-backup.sh
 
 # Installer le crontab
 COPY scripts/crontab /etc/cron.d/sunushop-backup
@@ -37,5 +42,4 @@ RUN mkdir -p /backups/daily /backups/weekly /backups/monthly \
 
 VOLUME ["/backups"]
 
-# Afficher les logs en temps réel
-CMD ["bash", "-c", "cron && tail -f /var/log/backup.log"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

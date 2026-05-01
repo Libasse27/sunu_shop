@@ -5,7 +5,7 @@ import NewsletterCampaign from '../models/NewsletterCampaign.model';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
-import { sendEmail, emailTemplates } from '../utils/sendEmail';
+import { emailService } from '../services/email.service';
 
 const generateToken = (): string => crypto.randomBytes(32).toString('hex');
 
@@ -13,7 +13,7 @@ export const subscribe = asyncHandler(async (req: Request, res: Response) => {
   const { email } = req.body;
   if (!email) throw ApiError.badRequest('Email requis');
 
-  const clientUrl = process.env.CLIENT_URL || 'https://techafrique.sn';
+  const clientUrl = process.env.CLIENT_URL || 'https://sunushop.sn';
 
   const existing = await Newsletter.findOne({ email });
   if (existing) {
@@ -25,8 +25,7 @@ export const subscribe = asyncHandler(async (req: Request, res: Response) => {
     await existing.save();
 
     const unsubscribeUrl = `${clientUrl}/newsletter/unsubscribe?token=${existing.unsubscribeToken}`;
-    const tpl = emailTemplates.newsletterWelcome(email, `${clientUrl}/boutique`, unsubscribeUrl);
-    sendEmail({ to: email, subject: tpl.subject, html: tpl.html }).catch(() => {});
+    emailService.sendNewsletterWelcome(email, `${clientUrl}/boutique`, unsubscribeUrl).catch(() => {});
 
     return ApiResponse.success(res, null, 'Vous êtes à nouveau inscrit à la newsletter');
   }
@@ -35,10 +34,9 @@ export const subscribe = asyncHandler(async (req: Request, res: Response) => {
   await Newsletter.create({ email, unsubscribeToken: token });
 
   const unsubscribeUrl = `${clientUrl}/newsletter/unsubscribe?token=${token}`;
-  const tpl = emailTemplates.newsletterWelcome(email, `${clientUrl}/boutique`, unsubscribeUrl);
-  sendEmail({ to: email, subject: tpl.subject, html: tpl.html }).catch(() => {});
+  emailService.sendNewsletterWelcome(email, `${clientUrl}/boutique`, unsubscribeUrl).catch(() => {});
 
-  ApiResponse.created(res, null, 'Inscription réussie ! Bienvenue dans la communauté TechAfrique.');
+  ApiResponse.created(res, null, 'Inscription réussie ! Bienvenue dans la communauté SunuShop.');
 });
 
 export const unsubscribeByToken = asyncHandler(async (req: Request, res: Response) => {
@@ -104,7 +102,7 @@ export const sendNewsletter = asyncHandler(async (req: Request, res: Response) =
   let sentCount = 0;
   const errors: string[] = [];
 
-  const clientUrl = process.env.CLIENT_URL || 'https://techafrique.sn';
+  const clientUrl = process.env.CLIENT_URL || 'https://sunushop.sn';
   const shopUrl = `${clientUrl}/boutique`;
 
   const batchSize = 20;
@@ -113,10 +111,9 @@ export const sendNewsletter = asyncHandler(async (req: Request, res: Response) =
     await Promise.allSettled(
       batch.map(sub => {
         const unsubscribeUrl = `${clientUrl}/newsletter/unsubscribe?token=${sub.unsubscribeToken}`;
-        const tpl = emailTemplates.newsletterBroadcast(subject, body, shopUrl, unsubscribeUrl);
-        return sendEmail({ to: sub.email, subject: tpl.subject, html: tpl.html })
+        return emailService.sendNewsletterBroadcast(sub.email, subject, body, shopUrl, unsubscribeUrl)
           .then(() => sentCount++)
-          .catch(err => errors.push(`${sub.email}: ${err.message}`));
+          .catch((err: Error) => errors.push(`${sub.email}: ${err.message}`));
       })
     );
   }

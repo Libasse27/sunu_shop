@@ -4,11 +4,12 @@ import { Readable } from 'stream';
 import Product from '../models/Product.model';
 import Category from '../models/Category.model';
 import Service from '../models/Service.model';
+import logger from '../utils/logger';
 import { env } from '../config/env';
 
 const router = Router();
 
-const HOSTNAME = env.CLIENT_URL || 'https://techafrique.sn';
+const HOSTNAME = env.CLIENT_URL || 'https://sunushop.sn';
 
 /**
  * @swagger
@@ -33,7 +34,7 @@ router.get('/sitemap.xml', async (_req: Request, res: Response) => {
   try {
     // Récupérer les données depuis MongoDB en parallèle
     const [products, categories, services] = await Promise.all([
-      Product.find({ isActive: true }, 'slug updatedAt').lean<Array<{ slug: string; updatedAt: Date }>>(),
+      Product.find({ isActive: true }, 'slug updatedAt name images isFeatured stock').lean<Array<{ slug: string; updatedAt: Date; name: string; images: Array<{ url: string; isPrimary?: boolean }>; isFeatured?: boolean; stock: number }>>(),
       Category.find({ isActive: true }, 'slug updatedAt').lean<Array<{ slug: string; updatedAt: Date }>>(),
       Service.find({ isAvailable: true }, 'slug updatedAt').lean<Array<{ slug: string; updatedAt: Date }>>(),
     ]);
@@ -56,12 +57,22 @@ router.get('/sitemap.xml', async (_req: Request, res: Response) => {
       })),
 
       // Produits
-      ...products.map(p => ({
-        url: `/produit/${p.slug}`,
-        priority: 0.7,
-        changefreq: 'weekly',
-        lastmod: p.updatedAt,
-      })),
+      ...products.map(p => {
+        const primaryImg = p.images?.find((img: any) => img.isPrimary) ?? p.images?.[0];
+        return {
+          url: `/produit/${p.slug}`,
+          priority: p.isFeatured ? 0.9 : p.stock > 0 ? 0.7 : 0.5,
+          changefreq: 'weekly' as const,
+          lastmod: p.updatedAt,
+          ...(primaryImg?.url ? {
+            img: [{
+              url: primaryImg.url,
+              caption: p.name,
+              title: p.name,
+            }],
+          } : {}),
+        };
+      }),
 
       // Services
       ...services.map(s => ({
@@ -78,8 +89,8 @@ router.get('/sitemap.xml', async (_req: Request, res: Response) => {
     res.setHeader('Content-Type', 'application/xml');
     res.setHeader('Cache-Control', 'public, max-age=3600'); // cache 1 heure
     res.send(xml.toString());
-  } catch (err: any) {
-    console.error('Sitemap error:', err.message);
+  } catch (err: unknown) {
+    logger.error('Sitemap generation error', { error: err });
     res.status(500).send('Erreur génération sitemap');
   }
 });

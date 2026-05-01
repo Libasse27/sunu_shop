@@ -115,6 +115,6 @@ export const invalidateCache = async (...patterns: string[]): Promise<void> => {
  * Crée une clé de cache incluant l'utilisateur connecté (données personnalisées).
  */
 export const userCacheKey = (req: Request): string => {
-  const userId = (req as any).user?._id || 'anonymous';
+  const userId = req.user?._id?.toString() || 'anonymous';
   return `cache:user:${userId}:${req.originalUrl}`;
 };

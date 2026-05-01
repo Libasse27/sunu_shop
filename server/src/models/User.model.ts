@@ -2,15 +2,17 @@ import mongoose, { Schema, Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export interface IAddress {
-  fullName: string;
-  phone: string;
-  street: string;
-  city: string;
-  region?: string;
-  country: string;
-  postalCode?: string;
-  isDefault: boolean;
-  label: 'domicile' | 'bureau' | 'autre';
+  _id?:         mongoose.Types.ObjectId;
+  fullName:     string;
+  phone:        string;
+  street:       string;
+  city:         string;
+  region?:      string;
+  country:      string;
+  postalCode?:  string;
+  isDefault:    boolean;
+  label:        'domicile' | 'bureau' | 'autre';
+  deleteOne?:   () => void;
 }
 
 export interface IUser extends Document {
@@ -94,7 +96,9 @@ const UserSchema = new Schema<IUser>({
 
 UserSchema.index({ email: 1, role: 1 });
 UserSchema.index({ createdAt: -1 });
-UserSchema.index({ isActive: 1, role: 1, createdAt: -1 });    // liste utilisateurs admin
+UserSchema.index({ isActive: 1, role: 1, createdAt: -1 });           // liste utilisateurs admin
+UserSchema.index({ resetPasswordToken: 1 }, { sparse: true });       // findOne({ resetPasswordToken })
+UserSchema.index({ verificationToken: 1 }, { sparse: true });        // findOne({ verificationToken })
 
 UserSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName}`;

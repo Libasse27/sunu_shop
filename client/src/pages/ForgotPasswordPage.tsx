@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Mail, Lock, CheckCircle, ArrowLeft, Send } from 'lucide-react';
 import api from '../services/api';
+import { getApiError } from '../utils/getApiError';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -17,8 +18,8 @@ export default function ForgotPasswordPage() {
     try {
       await api.post('/auth/forgot-password', { email });
       setSent(true);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Une erreur est survenue');
+    } catch (err: unknown) {
+      setError(getApiError(err, 'Une erreur est survenue'));
     } finally {
       setLoading(false);
     }

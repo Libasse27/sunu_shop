@@ -11,17 +11,22 @@ import { RootState, AppDispatch } from '../store/store';
 import ProductCard from '../components/product/ProductCard';
 import ProductReviews from '../components/product/ProductReviews';
 import { ProductDetailSkeleton } from '../components/skeletons';
-import api from '../services/api';
-import { Product } from '../types/product.types';
+import { useProduct, useRelatedProducts } from '../hooks/useProducts';
+import { Product, Variant } from '../types/product.types';
 import { formatPrice, getDiscountPercent } from '../utils/formatPrice';
+import { SITE_URL } from '../utils/constants';
 import toast from 'react-hot-toast';
 
 export default function ProductPage() {
   const { slug } = useParams();
   const dispatch = useDispatch<AppDispatch>();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [related, setRelated] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const { data: productData, isLoading } = useProduct(slug || '');
+  const product: Product | null = productData?.data ?? null;
+
+  const { data: relatedData } = useRelatedProducts(product?._id ?? '');
+  const related: Product[] = relatedData?.data ?? [];
+
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
@@ -29,36 +34,20 @@ export default function ProductPage() {
   const wishlist = useSelector((state: RootState) => state.wishlist.items);
   const isWished = product ? wishlist.includes(product._id) : false;
 
+  // Initialise les variantes par défaut et remet à zéro le scroll/sélection à chaque produit
   useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true);
-      try {
-        const { data } = await api.get(`/products/slug/${slug}`);
-        setProduct(data.data);
-
-        const defaults: Record<string, string> = {};
-        data.data?.variants?.forEach((v: any) => {
-          if (v.options?.length) defaults[v.name] = v.options[0].value;
-        });
-        setSelectedVariants(defaults);
-
-        if (data.data?._id) {
-          const r = await api.get(`/products/${data.data._id}/related`);
-          setRelated(r.data.data || []);
-        }
-      } catch {
-        setProduct(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProduct();
-    setQuantity(1);
+    if (!product) return;
+    const defaults: Record<string, string> = {};
+    (product.variants as Variant[] | undefined)?.forEach((v) => {
+      if (v.options?.length) defaults[v.name] = v.options[0].value;
+    });
+    setSelectedVariants(defaults);
     setSelectedImage(0);
+    setQuantity(1);
     window.scrollTo(0, 0);
-  }, [slug]);
+  }, [product?._id]);
 
-  if (loading) return <ProductDetailSkeleton />;
+  if (isLoading) return <ProductDetailSkeleton />;
   if (!product) return (
     <div className="container-custom py-10 text-center">
       <h2 className="font-bold text-2xl mb-3">Produit non trouvé</h2>
@@ -124,29 +113,64 @@ export default function ProductPage() {
       '@type': 'Offer',
       price: product.price,
       priceCurrency: product.currency || 'XOF',
+      url: `${SITE_URL}/produit/${product.slug}`,
       availability: product.stock > 0
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
       seller: {
         '@type': 'Organization',
-        name: 'TechAfrique',
+        name: 'Sunu Shop',
       },
     },
+  };
+
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Accueil', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Boutique', item: `${SITE_URL}/boutique` },
+      ...(product.category ? [{ '@type': 'ListItem', position: 3, name: (product.category as any).name || 'Catégorie', item: `${SITE_URL}/boutique/${(product.category as any).slug || ''}` }] : []),
+      { '@type': 'ListItem', position: product.category ? 4 : 3, name: product.name, item: `${SITE_URL}/produit/${product.slug}` },
+    ],
   };
 
   return (
     <>
       <Helmet>
-        <title>{product.seoTitle || `${product.name} — TechAfrique`}</title>
+        <title>{product.seoTitle || `${product.name} — Sunu Shop`}</title>
         <meta name="description" content={product.seoDescription || product.shortDescription || product.description.substring(0, 160)} />
         {product.seoKeywords && product.seoKeywords.length > 0 && (
           <meta name="keywords" content={product.seoKeywords.join(', ')} />
         )}
-        <meta property="og:title" content={product.name} />
-        <meta property="og:description" content={product.shortDescription || product.description.substring(0, 160)} />
-        {product.images?.[0]?.url && <meta property="og:image" content={product.images[0].url} />}
-        <meta property="og:type" content="product" />
+        <link rel="canonical" href={`${SITE_URL}/produit/${product.slug}`} />
+
+        {/* Open Graph — Product */}
+        <meta property="og:type"          content="product" />
+        <meta property="og:site_name"     content="Sunu Shop" />
+        <meta property="og:title"         content={product.seoTitle || product.name} />
+        <meta property="og:description"   content={product.shortDescription || product.description.substring(0, 160)} />
+        <meta property="og:url"           content={`${SITE_URL}/produit/${product.slug}`} />
+        {product.images?.[0]?.url && <>
+          <meta property="og:image"        content={product.images[0].url} />
+          <meta property="og:image:width"  content="800" />
+          <meta property="og:image:height" content="800" />
+          <meta property="og:image:alt"    content={product.name} />
+        </>}
+        <meta property="product:price:amount"   content={String(product.price)} />
+        <meta property="product:price:currency" content={product.currency || 'XOF'} />
+        <meta property="product:availability"   content={product.stock > 0 ? 'in stock' : 'out of stock'} />
+
+        {/* Twitter Cards */}
+        <meta name="twitter:card"        content="summary_large_image" />
+        <meta name="twitter:site"        content="@sunushop" />
+        <meta name="twitter:title"       content={product.seoTitle || product.name} />
+        <meta name="twitter:description" content={product.shortDescription || product.description.substring(0, 160)} />
+        {product.images?.[0]?.url && <meta name="twitter:image" content={product.images[0].url} />}
+
+        {/* Structured Data */}
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbLd)}</script>
       </Helmet>
 
       {/* Pan-African breadcrumb strip */}

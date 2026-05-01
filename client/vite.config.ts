@@ -91,6 +91,26 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, '../shared'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Admin pages — only loaded when user navigates to /admin
+          'admin-ui': ['recharts'],
+          // Heavy animation library
+          'motion': ['framer-motion'],
+          // React ecosystem core
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // State management
+          'store': ['@reduxjs/toolkit', 'react-redux'],
+          // Data fetching
+          'query': ['@tanstack/react-query'],
+          // Stripe (only loaded on checkout)
+          'stripe': ['@stripe/stripe-js', '@stripe/react-stripe-js'],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {

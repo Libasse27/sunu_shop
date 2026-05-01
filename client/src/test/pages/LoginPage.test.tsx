@@ -67,7 +67,7 @@ describe('LoginPage', () => {
 
     it('affiche le lien vers la page inscription', () => {
       renderWithProviders(<LoginPage />);
-      expect(screen.getByRole('link', { name: /s'inscrire/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /créer un compte/i })).toBeInTheDocument();
     });
   });
 
@@ -95,10 +95,8 @@ describe('LoginPage', () => {
       const passwordInput = screen.getByPlaceholderText('••••••••');
       expect(passwordInput).toHaveAttribute('type', 'password');
 
-      // Le bouton toggle est le seul button de type "button" dans le formulaire
-      const toggleButtons = screen.getAllByRole('button', { name: '' });
-      // Trouver le bouton toggle à l'intérieur du champ mot de passe
-      const eyeButton = document.querySelector('button[type="button"]') as HTMLElement;
+      // Le bouton toggle a un aria-label explicite
+      const eyeButton = screen.getByRole('button', { name: /afficher le mot de passe/i });
       await user.click(eyeButton);
 
       expect(screen.getByPlaceholderText('••••••••')).toHaveAttribute('type', 'text');

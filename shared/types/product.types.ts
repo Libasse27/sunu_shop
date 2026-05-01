@@ -23,6 +23,11 @@ export interface ISpecification {
   value: string;
 }
 
+/**
+ * IProduct — représentation "raw" du document MongoDB (category = ObjectId string).
+ * Côté client, après populate, utiliser l'interface Product de client/src/types/product.types.ts
+ * qui expose category comme { _id, name, slug }.
+ */
 export interface IProduct {
   _id: string;
   name: string;
@@ -35,8 +40,7 @@ export interface IProduct {
   costPrice?: number;
   currency: string;
   images: IProductImage[];
-  category: string;
-  subCategory?: string;
+  category: string;  // ObjectId — populate → { _id, name, slug } côté client
   tags: string[];
   variants: IVariant[];
   specifications: ISpecification[];
@@ -68,7 +72,6 @@ export interface IProduct {
 
 export interface ProductFilters {
   category?: string;
-  subCategory?: string;
   minPrice?: number;
   maxPrice?: number;
   rating?: number;

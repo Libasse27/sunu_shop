@@ -218,9 +218,11 @@
     <link
       rel="stylesheet"
       media="print"
-      onload="this.media='all'"
+      id="google-fonts-link"
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap"
     />
+    <!-- Remplace onload="this.media='all'" (inline handler interdit sans unsafe-inline) -->
+    <script nonce="__CSP_NONCE__">(function(){var l=document.getElementById('google-fonts-link');if(l)l.addEventListener('load',function(){l.media='all';});})();</script>
     <noscript>
       <link
         rel="stylesheet"
@@ -238,7 +240,7 @@
     ═══════════════════════════════════════════ -->
 
     <!-- Google Tag Manager -->
-    <script>
+    <script nonce="__CSP_NONCE__">
       (function() {
         var gtmId = '%VITE_GTM_ID%';
         if (!gtmId) return;
@@ -252,7 +254,7 @@
     <!-- End Google Tag Manager -->
 
     <!-- Facebook Pixel -->
-    <script>
+    <script nonce="__CSP_NONCE__">
       (function() {
         var fbPixelId = '%VITE_FB_PIXEL_ID%';
         if (!fbPixelId) return;
@@ -268,7 +270,7 @@
     <!-- End Facebook Pixel -->
 
     <!-- TikTok Pixel -->
-    <script>
+    <script nonce="__CSP_NONCE__">
       (function() {
         var ttPixelId = '%VITE_TIKTOK_PIXEL_ID%';
         if (!ttPixelId) return;
@@ -293,7 +295,7 @@
   <body>
 
     <!-- Google Tag Manager (noscript) -->
-    <script>
+    <script nonce="__CSP_NONCE__">
       document.write(
         '%VITE_GTM_ID%'
           ? '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=%VITE_GTM_ID%" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>'
@@ -303,7 +305,7 @@
     <!-- End Google Tag Manager (noscript) -->
 
     <!-- Facebook Pixel (noscript fallback) -->
-    <script>
+    <script nonce="__CSP_NONCE__">
       if ('%VITE_FB_PIXEL_ID%') {
         document.write(
           '<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=%VITE_FB_PIXEL_ID%&ev=PageView&noscript=1" /></noscript>'

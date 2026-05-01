@@ -264,4 +264,78 @@ describe('Orders API', () => {
       expect(res.status).toBe(403);
     });
   });
+
+  // ─── Isolation : un client ne peut pas accéder aux commandes d'un autre ───────
+  describe('Isolation des commandes', () => {
+    it('GET /:id — refuse si la commande appartient à un autre utilisateur', async () => {
+      const product = await createProduct(50000, 5);
+      // clientToken passe la commande
+      const orderRes = await request(app)
+        .post('/api/v1/orders')
+        .set('Authorization', `Bearer ${clientToken}`)
+        .send({
+          items: [{ product: product._id.toString(), quantity: 1 }],
+          shippingAddress,
+          payment: { method: 'cash_on_delivery' },
+        });
+      const orderId = orderRes.body.data._id;
+
+      // adminToken tente de lire la commande (il est admin mais pas propriétaire)
+      // Pour simuler un client différent, on crée un second client
+      const otherToken = await registerAndLogin('other@test.com', 'client');
+      const res = await request(app)
+        .get(`/api/v1/orders/${orderId}`)
+        .set('Authorization', `Bearer ${otherToken}`);
+
+      // 403 (accès interdit) ou 404 selon l'implémentation — les deux sont corrects
+      expect([403, 404]).toContain(res.status);
+    });
+
+    it('PUT /:id/cancel — refuse si la commande appartient à un autre utilisateur', async () => {
+      const product = await createProduct(50000, 5);
+      const orderRes = await request(app)
+        .post('/api/v1/orders')
+        .set('Authorization', `Bearer ${clientToken}`)
+        .send({
+          items: [{ product: product._id.toString(), quantity: 1 }],
+          shippingAddress,
+          payment: { method: 'cash_on_delivery' },
+        });
+      const orderId = orderRes.body.data._id;
+
+      const otherToken = await registerAndLogin('other2@test.com', 'client');
+      const res = await request(app)
+        .put(`/api/v1/orders/${orderId}/cancel`)
+        .set('Authorization', `Bearer ${otherToken}`);
+
+      expect([403, 404]).toContain(res.status);
+    });
+
+    it('my-orders — ne retourne pas les commandes des autres utilisateurs', async () => {
+      const product = await createProduct(50000, 5);
+      // clientToken passe 1 commande
+      await request(app)
+        .post('/api/v1/orders')
+        .set('Authorization', `Bearer ${clientToken}`)
+        .send({
+          items: [{ product: product._id.toString(), quantity: 1 }],
+          shippingAddress,
+          payment: { method: 'cash_on_delivery' },
+        });
+
+      // adminToken récupère ses propres commandes — ne doit pas voir celle de clientToken
+      const res = await request(app)
+        .get('/api/v1/orders/my-orders')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      const orderIds = (res.body.data as { _id: string }[]).map(o => o._id);
+      expect(orderIds).not.toContain(expect.stringContaining(''));
+      // Plus robuste : vérifier qu'aucune commande n'appartient à l'autre user
+      const hasOtherOrder = res.body.data.some(
+        (o: { user?: string }) => o.user && o.user !== adminToken,
+      );
+      expect(hasOtherOrder).toBe(false);
+    });
+  });
 });

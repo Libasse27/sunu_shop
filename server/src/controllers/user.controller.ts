@@ -82,7 +82,7 @@ export const updatePreferences = asyncHandler(async (req: Request, res: Response
 // Admin
 export const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit } = getPagination(req.query);
-  const { search, role } = req.query;
+  const { search, role, isActive } = req.query;
 
   const filter: any = {};
   if (search) {
@@ -93,6 +93,9 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
     ];
   }
   if (role) filter.role = role;
+  if (['true', 'false'].includes(isActive as string)) {
+    filter.isActive = isActive === 'true';
+  }
 
   const total = await User.countDocuments(filter);
   const users = await User.find(filter)
@@ -113,7 +116,8 @@ export const updateUserRole = asyncHandler(async (req: Request, res: Response) =
 export const toggleUserStatus = asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findById(req.params.id);
   if (!user) throw ApiError.notFound('Utilisateur non trouvé');
-  user.isActive = !user.isActive;
+  const { isActive } = req.body;
+  user.isActive = typeof isActive === 'boolean' ? isActive : !user.isActive;
   await user.save();
   ApiResponse.success(res, user, `Compte ${user.isActive ? 'activé' : 'désactivé'}`);
 });

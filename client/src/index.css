@@ -2,26 +2,176 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ═══════════════════════════════════════════════════════════
-   Sunu Shop — Design System · Couleurs Drapeau Sénégal
-   Vert  #009A44 (primaire · CTA · succès)
-   Or    #FCD116 (accent  · prix · promotions)
-   Rouge #E31B23 (danger  · soldes · alertes)
-   Blanc #FFFFFF (fond principal · texte sur couleurs)
-   Sombre #1A1A2E (texte principal · header)
-═══════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   Sunu Shop — Design System · Colors & Typography
+   Drapeau Sénégal palette: Vert · Or · Rouge
+════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── PRIMARY · Vert Sénégal ── */
+  --primary:        #009A44;
+  --primary-light:  #00C057;
+  --primary-dark:   #007A35;
+  --primary-50:     #E6F7EE;
+  --primary-100:    #C3EDD5;
+  --primary-200:    #8CDAAC;
+  --primary-300:    #56C884;
+  --primary-400:    #1FB55B;
+  --primary-500:    #009A44;
+  --primary-600:    #007A35;
+  --primary-700:    #005C28;
+  --primary-800:    #003D1C;
+  --primary-900:    #001F0E;
+
+  /* ── SECONDARY · Rouge Sénégal ── */
+  --secondary:       #E31B23;
+  --secondary-light: #F04E54;
+  --secondary-dark:  #B81219;
+  --secondary-50:    #FDEAEA;
+  --secondary-100:   #FABCBE;
+  --secondary-500:   #E31B23;
+  --secondary-600:   #B81219;
+  --secondary-700:   #8A0D13;
+
+  /* ── ACCENT · Or Sénégal ── */
+  --accent:        #FCD116;
+  --accent-light:  #FFE44D;
+  --accent-dark:   #CCB000;
+  --accent-50:     #FFFDE6;
+  --accent-100:    #FFF9C0;
+  --accent-200:    #FFF180;
+  --accent-500:    #FCD116;
+  --accent-600:    #CCB000;
+  --accent-700:    #9A7A00;
+
+  /* ── Neutrals ── */
+  --ta-dark:    #1A1A2E;
+  --ta-dark-2:  #003D1C;
+  --bg-app:     #F8F9FA;
+  --bg-surface: #FFFFFF;
+  --cream:      #FFFDF0;
+  --cream-dark: #FFF8CC;
+
+  --gray-50:  #F8FAFC;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+
+  /* ── Semantic foreground ── */
+  --fg-1: var(--gray-900);
+  --fg-2: var(--gray-600);
+  --fg-3: var(--gray-400);
+  --fg-on-primary: #FFFFFF;
+  --fg-on-accent:  var(--ta-dark);
+
+  /* ── Status colors ── */
+  --status-pending:    #F59E0B;
+  --status-confirmed:  var(--primary);
+  --status-processing: var(--primary-dark);
+  --status-shipped:    #8B5CF6;
+  --status-delivered:  #10B981;
+  --status-cancelled:  var(--secondary);
+  --status-refunded:   #64748B;
+
+  /* ── Payment brand colors ── */
+  --pay-orange-money: #FF6600;
+  --pay-wave:         #1DC8FF;
+  --pay-stripe:       #635BFF;
+  --pay-cod:          var(--primary);
+
+  /* ── Typography ── */
+  --font-heading: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-price:   'DM Sans', 'Inter', sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* ── Type scale ── */
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 14px;
+  --text-md:   16px;
+  --text-lg:   18px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  30px;
+  --text-4xl:  36px;
+  --text-5xl:  48px;
+
+  /* ── Weights ── */
+  --w-light:    300;
+  --w-regular:  400;
+  --w-medium:   500;
+  --w-semibold: 600;
+  --w-bold:     700;
+  --w-black:    900;
+
+  /* ── Spacing (4px base) ── */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* ── Radii ── */
+  --r-sm:    4px;
+  --r-card:  8px;
+  --r-modal: 12px;
+  --r-xl:    16px;
+  --r-pill:  24px;
+  --r-full:  9999px;
+
+  /* ── Shadows ── */
+  --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow:      0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-md:   0 4px 12px rgba(0, 0, 0, 0.10);
+  --shadow-lg:   0 8px 20px rgba(0, 0, 0, 0.12);
+  --shadow-cta:  0 6px 20px rgba(0, 154, 68, 0.35);
+  --shadow-gold: 0 6px 20px rgba(252, 209, 22, 0.40);
+  --shadow-red:  0 6px 20px rgba(227, 27, 35, 0.30);
+
+  /* ── Borders ── */
+  --border:        1px solid var(--gray-200);
+  --border-strong: 1.5px solid var(--gray-300);
+
+  /* ── Motion ── */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur:      200ms;
+  --dur-slow: 500ms;
+
+  /* ── Layout ── */
+  --container-max: 80rem;
+  --container-pad: 16px;
+
+  /* ── Pan-African gradients ── */
+  --gradient-flag:   linear-gradient(135deg, #009A44 0%, #FCD116 50%, #E31B23 100%);
+  --gradient-flag-h: linear-gradient(to right, #00853F 0%, #D4920A 50%, #E31B23 100%);
+  --gradient-green:  linear-gradient(135deg, #009A44 0%, #007A35 100%);
+  --gradient-gold:   linear-gradient(135deg, #FCD116 0%, #FFE44D 100%);
+  --gradient-red:    linear-gradient(135deg, #E31B23 0%, #B81219 100%);
+  --gradient-hero:   linear-gradient(105deg, #003D1C 0%, #005C29 28%, rgba(0,60,28,0.65) 58%, transparent 100%);
+}
 
 /* ── Global keyframes ── */
 @keyframes bounce {
   0%, 100% { transform: translateY(0); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
   50%       { transform: translateY(-6px); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
 }
-
 @keyframes pulse-wa {
   0%, 100% { transform: scale(1); }
   50%       { transform: scale(1.1); }
 }
-
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -29,14 +179,51 @@
 
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
+
   html { scroll-behavior: smooth; }
+
   body {
-    @apply font-body text-gray-900 bg-gray-50;
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    font-weight: var(--w-regular);
+    line-height: 1.5;
+    color: var(--fg-1);
+    background: var(--bg-app);
     margin: 0;
     padding: 0;
+    -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4, h5, h6 { @apply font-heading; }
-  ::selection { @apply bg-primary text-white; }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--fg-1);
+    margin: 0 0 var(--sp-3);
+  }
+  h1 { font-size: var(--text-4xl); font-weight: var(--w-bold);    line-height: 1.1;  letter-spacing: -0.02em; }
+  h2 { font-size: var(--text-xl);  font-weight: var(--w-bold);    line-height: 1.2; }
+  h3 { font-size: var(--text-lg);  font-weight: var(--w-semibold); line-height: 1.25; }
+  h4 { font-size: var(--text-md);  font-weight: var(--w-semibold); }
+  h5 { font-size: var(--text-sm);  font-weight: var(--w-bold);    text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+  h6 { font-size: var(--text-xs);  font-weight: var(--w-bold);    text-transform: uppercase; letter-spacing: 0.06em; }
+
+  p { margin: 0 0 var(--sp-3); color: var(--fg-2); }
+
+  a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color var(--dur) var(--ease-out);
+  }
+  a:hover { color: var(--primary-dark); text-decoration: underline; }
+
+  code, pre {
+    font-family: var(--font-mono);
+    font-size: 0.95em;
+    background: var(--gray-100);
+    padding: 2px 6px;
+    border-radius: var(--r-sm);
+  }
+
+  ::selection { background: var(--primary); color: #fff; }
 }
 
 @layer components {
@@ -112,22 +299,19 @@
   }
 
   /* ── Product card ── */
-  /* Note: add `group` directly in HTML — cannot use @apply with group */
   .product-card {
     @apply block rounded-xl border overflow-hidden bg-white;
     text-decoration: none;
     transition: box-shadow 0.2s ease;
   }
   .product-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
   }
-
-  /* Quick actions — hidden by default, slide up on parent hover */
   .product-card .product-actions {
     @apply absolute bottom-0 left-0 right-0 p-3;
     opacity: 0;
     transform: translateY(100%);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
   }
   .product-card:hover .product-actions {
     opacity: 1;
@@ -141,7 +325,6 @@
            focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15
            transition-colors duration-200 bg-white
            disabled:bg-gray-50 disabled:cursor-not-allowed;
-    /* Prevent Chrome autofill yellow background */
     -webkit-box-shadow: 0 0 0 1000px white inset;
   }
   .input-field:-webkit-autofill {
@@ -193,6 +376,15 @@
     animation: shimmer 1.5s infinite;
   }
 
+  /* ── Eyebrow / category label ── */
+  .eyebrow {
+    font-size: var(--text-xs);
+    font-weight: var(--w-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--primary-dark);
+  }
+
   /* ── Pan-African strip ── */
   .pan-strip {
     @apply flex h-1;
@@ -201,7 +393,6 @@
   .pan-strip > :nth-child(2) { @apply flex-1 bg-accent; }
   .pan-strip > :nth-child(3) { @apply flex-1 bg-secondary; }
 
-  /* Horizontal variant — 4px height */
   .pan-strip-h {
     @apply flex;
     height: 4px;
@@ -217,7 +408,7 @@
     @apply bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent;
   }
   .text-gradient-pan {
-    background: linear-gradient(135deg, #009A44, #FCD116, #E31B23);
+    background: var(--gradient-flag);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -225,20 +416,21 @@
 
   /* ── Price typography ── */
   .text-price {
-    @apply font-price font-bold;
+    font-family: var(--font-price);
+    font-weight: var(--w-bold);
   }
 
-  /* ── Focus ring utility ── */
+  /* ── Focus ring ── */
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1;
   }
 
-  /* ── Hover lift utility ── */
+  /* ── Hover lift ── */
   .hover-lift {
     @apply transition-transform duration-150 hover:-translate-y-1;
   }
 
-  /* ── WhatsApp pulse animation ── */
+  /* ── WhatsApp pulse ── */
   .animate-pulse-wa {
     animation: pulse-wa 2s ease-in-out infinite;
   }
@@ -247,26 +439,16 @@
   .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-  /* Fine scrollbar — for CartDrawer and sidebars */
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: #d1d5db transparent;
   }
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 4px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #d1d5db;
-    border-radius: 9999px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: #9ca3af;
-  }
+  .scrollbar-thin::-webkit-scrollbar        { width: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track  { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb  { background-color: #d1d5db; border-radius: 9999px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background-color: #9ca3af; }
 
-  /* ── Leaflet ── */
-  .leaflet-pane   { z-index: 400 !important; }
+  /* ── Leaflet z-index fix ── */
+  .leaflet-pane                { z-index: 400 !important; }
   .leaflet-top, .leaflet-bottom { z-index: 999 !important; }
 }

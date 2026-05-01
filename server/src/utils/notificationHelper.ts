@@ -1,6 +1,7 @@
 import Notification from '../models/Notification.model';
 import { emitNotificationToUser } from '../config/socket';
 import mongoose from 'mongoose';
+import logger from './logger';
 
 interface CreateNotificationParams {
   userId: string | mongoose.Types.ObjectId;
@@ -23,7 +24,7 @@ export const createNotification = async (params: CreateNotificationParams): Prom
     // Emit via Socket.io to the user in real-time
     emitNotificationToUser(params.userId.toString(), notification.toObject());
   } catch (error) {
-    console.error('Error creating notification:', error);
+    logger.error('Erreur création notification', { error });
   }
 };
 

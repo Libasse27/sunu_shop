@@ -21,9 +21,6 @@ export const createProductValidator = [
   body('category')
     .notEmpty().withMessage('La catégorie est requise')
     .isMongoId().withMessage('ID de catégorie invalide'),
-  body('subCategory')
-    .optional()
-    .isMongoId().withMessage('ID de sous-catégorie invalide'),
   body('stock')
     .optional()
     .isInt({ min: 0 }).withMessage('Le stock doit être un entier positif'),
