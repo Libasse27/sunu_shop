@@ -42,7 +42,7 @@ export default function Header() {
     try { return localStorage.getItem('ann_dismissed') === '1'; } catch { return false; }
   });
   const annTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     api.get('/announcements').then(res => {
@@ -165,7 +165,7 @@ export default function Header() {
           {/* Dismiss button */}
           <button
             onClick={dismissAnn}
-            aria-label="Fermer l'annonce"
+            aria-label={t('common.closeAnnouncement')}
             className="absolute top-2 right-2 flex items-center justify-center rounded-full z-20 border-0 transition-opacity opacity-75 hover:opacity-100"
             style={{ width: '1.5rem', height: '1.5rem', backgroundColor: 'rgba(0,0,0,0.45)', color: '#fff' }}
           >
@@ -228,7 +228,7 @@ export default function Header() {
             {/* Dismiss button */}
             <button
               onClick={dismissAnn}
-              aria-label="Fermer l'annonce"
+              aria-label={t('common.closeAnnouncement')}
               className="p-1 rounded border-0 opacity-60 hover:opacity-100 transition-opacity"
               style={{ color: current.textColor, backgroundColor: 'transparent', marginRight: '0.25rem' }}
             >
@@ -262,7 +262,7 @@ export default function Header() {
               {/* Language toggle */}
               <button
                 onClick={toggleLanguage}
-                title={i18n.language === 'fr' ? 'Switch to English' : 'Passer en Français'}
+                title={i18n.language === 'fr' ? t('common.switchToEnglish') : t('common.switchToFrench')}
                 className="hidden xl:flex items-center gap-1 px-3 py-1 rounded-full border text-sm font-semibold text-gray-600 transition-all hover:border-primary hover:text-primary"
                 style={{ fontSize: '0.75rem' }}
               >
@@ -275,7 +275,7 @@ export default function Header() {
                 onClick={() => user ? navigate('/favoris') : navigate('/connexion')}
                 className="relative hidden sm:flex flex-col items-center justify-center rounded-lg border-0 bg-transparent text-gray-600 transition-all hover:bg-gray-100"
                 style={{ width: '2.75rem', height: '2.75rem' }}
-                title="Mes favoris"
+                title={t('common.myFavorites')}
               >
                 <Heart size={20} />
                 {wishlistCount > 0 && (
@@ -300,7 +300,7 @@ export default function Header() {
               {/* Cart */}
               <button
                 onClick={() => dispatch(openCartDrawer())}
-                aria-label="Ouvrir le panier"
+                aria-label={t('common.openCart')}
                 className="relative flex flex-col items-center justify-center rounded-lg border-0 bg-transparent text-gray-600 transition-all hover:bg-gray-100"
                 style={{ width: '2.75rem', height: '2.75rem' }}
               >
@@ -359,21 +359,21 @@ export default function Header() {
                         <HMenu.Item>
                           {({ active }) => (
                             <Link to="/mon-compte" className={`flex items-center gap-2 px-4 py-2 text-sm no-underline text-gray-800 transition-colors ${active ? 'bg-gray-50' : ''}`}>
-                              <User size={14} className="opacity-50" /> Mon compte
+                              <User size={14} className="opacity-50" /> {t('common.account')}
                             </Link>
                           )}
                         </HMenu.Item>
                         <HMenu.Item>
                           {({ active }) => (
                             <Link to="/mon-compte/commandes" className={`flex items-center gap-2 px-4 py-2 text-sm no-underline text-gray-800 transition-colors ${active ? 'bg-gray-50' : ''}`}>
-                              <ShoppingCart size={14} className="opacity-50" /> Mes commandes
+                              <ShoppingCart size={14} className="opacity-50" /> {t('common.myOrders')}
                             </Link>
                           )}
                         </HMenu.Item>
                         <HMenu.Item>
                           {({ active }) => (
                             <Link to="/favoris" className={`flex items-center gap-2 px-4 py-2 text-sm no-underline text-gray-800 transition-colors ${active ? 'bg-gray-50' : ''}`}>
-                              <Heart size={14} className="opacity-50" /> Ma wishlist
+                              <Heart size={14} className="opacity-50" /> {t('common.wishlist')}
                             </Link>
                           )}
                         </HMenu.Item>
@@ -384,7 +384,7 @@ export default function Header() {
                                 <span className="flex items-center justify-center rounded" style={{ width: '0.875rem', height: '0.875rem', backgroundColor: '#009A44', opacity: 0.8 }}>
                                   <span className="text-white font-bold" style={{ fontSize: '8px' }}>A</span>
                                 </span>
-                                Administration
+                                {t('common.administration')}
                               </Link>
                             )}
                           </HMenu.Item>
@@ -397,7 +397,7 @@ export default function Header() {
                               className={`w-full text-left flex items-center gap-2 px-4 py-2 text-sm border-0 bg-transparent transition-colors ${active ? 'bg-red-50' : ''}`}
                               style={{ color: '#E31B23' }}
                             >
-                              <LogOut size={14} /> Déconnexion
+                              <LogOut size={14} /> {t('common.logout')}
                             </button>
                           )}
                         </HMenu.Item>
@@ -411,7 +411,7 @@ export default function Header() {
                     style={{ background: 'linear-gradient(135deg, #009A44, #007A35)', boxShadow: '0 4px 12px rgba(0,133,63,0.3)', padding: '0.5rem 1rem' }}
                   >
                     <User size={15} />
-                    <span className="hidden sm:block">Connexion</span>
+                    <span className="hidden sm:block">{t('common.login')}</span>
                   </button>
                 )}
               </div>
@@ -439,7 +439,7 @@ export default function Header() {
                 onClick={() => setCategoriesOpen(v => !v)}
               >
                 <Menu size={16} />
-                Toutes les catégories
+                {t('nav.allCategories')}
                 <ChevronDown size={13} className={`transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -479,41 +479,41 @@ export default function Header() {
                 className="text-sm font-medium no-underline px-4 py-2 mx-0.5 rounded-lg transition-colors hover:text-white hover:bg-white/10"
                 style={{ color: 'rgba(255,255,255,0.9)' }}
               >
-                Boutique
+                {t('common.shop')}
               </Link>
               <Link
                 to="/boutique?onSale=true"
                 className="flex items-center gap-1 text-sm font-semibold no-underline px-4 py-2 mx-0.5 rounded-lg transition-colors hover:bg-white/10"
                 style={{ color: '#FCD116' }}
               >
-                <Tag size={13} /> Promos
+                <Tag size={13} /> {t('nav.promotions')}
               </Link>
               <Link
                 to="/boutique?sort=newest"
                 className="text-sm font-medium no-underline px-4 py-2 mx-0.5 rounded-lg transition-colors hover:text-white hover:bg-white/10"
                 style={{ color: 'rgba(255,255,255,0.9)' }}
               >
-                Nouveautés
+                {t('nav.newArrivals')}
               </Link>
               <Link
                 to="/services"
                 className="flex items-center gap-1 text-sm font-semibold no-underline px-4 py-2 mx-0.5 rounded-lg transition-colors hover:bg-white/10"
                 style={{ color: '#FCD116' }}
               >
-                <Wrench size={13} /> Services
+                <Wrench size={13} /> {t('nav.services')}
               </Link>
               <Link
                 to="/contact"
                 className="text-sm font-medium no-underline px-4 py-2 mx-0.5 rounded-lg transition-colors hover:text-white hover:bg-white/10"
                 style={{ color: 'rgba(255,255,255,0.9)' }}
               >
-                Contact
+                {t('nav.contact')}
               </Link>
             </div>
 
             {/* Right: free shipping info */}
             <div className="ml-auto text-sm hidden xl:block pr-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              🚚 Livraison gratuite dès {formatPrice(FREE_SHIPPING_THRESHOLD)}
+              🚚 {t('common.freeShippingFrom')}
             </div>
           </div>
         </div>
@@ -532,7 +532,7 @@ export default function Header() {
             {/* Mobile search */}
             <div className="container-custom pt-4 pb-2">
               <SearchBar
-                placeholder="Rechercher un produit..."
+                placeholder={t('common.searchProducts')}
                 onNavigate={() => setMobileOpen(false)}
               />
             </div>
@@ -554,7 +554,7 @@ export default function Header() {
                   className="flex items-center gap-3 px-4 py-2 text-sm font-semibold no-underline rounded-xl transition-colors"
                   style={{ color: '#E31B23' }}
                 >
-                  <Tag size={15} /> Promotions
+                  <Tag size={15} /> {t('nav.promotions')}
                 </Link>
                 <Link
                   to="/services"
@@ -562,31 +562,31 @@ export default function Header() {
                   className="flex items-center gap-3 px-4 py-2 text-sm font-semibold no-underline rounded-xl transition-colors"
                   style={{ color: '#009A44' }}
                 >
-                  <Wrench size={15} /> Services Réparation
+                  <Wrench size={15} /> {t('nav.repairServices')}
                 </Link>
                 <hr className="my-2" />
                 {!user ? (
                   <>
                     <button onClick={() => { setMobileOpen(false); navigate('/connexion'); }} className="w-full text-left px-4 py-2 text-sm font-medium border-0 bg-transparent rounded-xl">
-                      Connexion
+                      {t('common.login')}
                     </button>
                     <button onClick={() => { setMobileOpen(false); navigate('/inscription'); }} className="w-full text-left px-4 py-2 text-sm font-semibold border-0 bg-transparent rounded-xl" style={{ color: '#009A44' }}>
-                      Créer un compte
+                      {t('common.createAccount')}
                     </button>
                   </>
                 ) : (
                   <>
                     <Link to="/mon-compte" onClick={() => setMobileOpen(false)} className="block px-4 py-2 text-sm no-underline text-gray-800 rounded-xl">
-                      Mon compte
+                      {t('common.account')}
                     </Link>
                     <Link to="/favoris" onClick={() => setMobileOpen(false)} className="block px-4 py-2 text-sm no-underline text-gray-800 rounded-xl">
-                      Favoris ({wishlistCount})
+                      {t('common.wishlist')} ({wishlistCount})
                     </Link>
                     <button
                       onClick={() => { dispatch(logout()); setMobileOpen(false); }}
                       className="w-full text-left px-4 py-2 text-sm border-0 bg-transparent rounded-xl flex items-center gap-2 text-red-500"
                     >
-                      <LogOut size={15} /> Déconnexion
+                      <LogOut size={15} /> {t('common.logout')}
                     </button>
                   </>
                 )}

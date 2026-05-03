@@ -1,0 +1,202 @@
+groups:
+  # ────────────────────────────────────────────────────────────────────────────
+  # API Health
+  # ────────────────────────────────────────────────────────────────────────────
+  - name: sunushop_api_health
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job="sunushop-api", status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{job="sunushop-api"}[5m]))
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "API error rate > 5%"
+          description: >
+            HTTP 5xx rate is {{ $value | humanizePercentage }} over the last 5 minutes
+            (threshold: 5%). Check app logs and database connectivity.
+
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket{job="sunushop-api"}[5m])) by (le, route)
+          ) > 0.8
+        for: 3m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "p95 latency > 800ms on {{ $labels.route }}"
+          description: >
+            p95 response time is {{ $value | humanizeDuration }} on route {{ $labels.route }}.
+            Expected < 800ms. Investigate slow queries or Redis cache miss.
+
+      - alert: VeryHighLatencyP95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket{job="sunushop-api"}[5m])) by (le)
+          ) > 2
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "p95 latency > 2s globally"
+          description: >
+            Global p95 latency is {{ $value | humanizeDuration }}.
+            This likely indicates DB saturation or memory pressure.
+
+      - alert: ApiDown
+        expr: up{job="sunushop-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Sunu Shop API is down"
+          description: "Prometheus cannot scrape the API. Pod/process may have crashed."
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Active connections / traffic
+  # ────────────────────────────────────────────────────────────────────────────
+  - name: sunushop_traffic
+    rules:
+      - alert: TooManyActiveRequests
+        expr: http_active_requests{job="sunushop-api"} > 500
+        for: 1m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Active in-flight requests > 500"
+          description: >
+            Currently {{ $value }} concurrent requests.
+            This may indicate a traffic spike or slow consumers.
+
+      - alert: RequestRateSpike
+        expr: |
+          sum(rate(http_requests_total{job="sunushop-api"}[1m])) > 1000
+        for: 2m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Request rate > 1 000 req/min"
+          description: >
+            Current rate: {{ $value | humanize }} req/s.
+            Possible DDoS or traffic spike — check Nginx and rate-limiter logs.
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # MongoDB
+  # ────────────────────────────────────────────────────────────────────────────
+  - name: sunushop_mongodb
+    rules:
+      - alert: MongoDBDown
+        expr: up{job="mongodb"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infra
+        annotations:
+          summary: "MongoDB is unreachable"
+          description: "Prometheus cannot scrape MongoDB exporter. Database may be down."
+
+      - alert: MongoDBHighConnectionsUsage
+        expr: |
+          mongodb_connections{state="current"} / mongodb_connections{state="available"} > 0.80
+        for: 5m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "MongoDB connection pool > 80% used"
+          description: >
+            {{ $value | humanizePercentage }} of available connections are in use.
+            Consider increasing maxPoolSize or scaling horizontally.
+
+      - alert: MongoDBSlowQueries
+        expr: rate(mongodb_op_counters_total{type="query"}[5m]) > 500
+        for: 3m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "MongoDB query rate > 500/s"
+          description: >
+            High query rate ({{ $value | humanize }}/s). Verify indexes and avoid collection scans.
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Redis
+  # ────────────────────────────────────────────────────────────────────────────
+  - name: sunushop_redis
+    rules:
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infra
+        annotations:
+          summary: "Redis is unreachable"
+          description: "Cache layer is down. Rate-limiter and session cache will fail."
+
+      - alert: RedisHighMemoryUsage
+        expr: |
+          redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "Redis memory usage > 85%"
+          description: >
+            Redis memory at {{ $value | humanizePercentage }}. Risk of eviction.
+            Review TTL policies and consider increasing maxmemory.
+
+      - alert: RedisHighEvictionRate
+        expr: rate(redis_evicted_keys_total[5m]) > 100
+        for: 2m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "Redis evicting > 100 keys/s"
+          description: >
+            Cache eviction rate too high ({{ $value | humanize }}/s).
+            Increase maxmemory or reduce data volume.
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Node.js process
+  # ────────────────────────────────────────────────────────────────────────────
+  - name: sunushop_process
+    rules:
+      - alert: HighHeapUsage
+        expr: |
+          nodejs_heap_size_used_bytes{job="sunushop-api"}
+          / nodejs_heap_size_total_bytes{job="sunushop-api"} > 0.90
+        for: 3m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Node.js heap > 90% — OOM risk"
+          description: >
+            Heap usage: {{ $value | humanizePercentage }}.
+            The process is close to out-of-memory. Check for memory leaks.
+
+      - alert: HighEventLoopLag
+        expr: nodejs_eventloop_lag_seconds{job="sunushop-api"} > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Event loop lag > 500ms"
+          description: >
+            Event loop lag is {{ $value | humanizeDuration }}.
+            Possible CPU-bound work blocking the loop.

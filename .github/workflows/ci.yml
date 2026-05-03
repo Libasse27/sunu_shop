@@ -275,3 +275,105 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Navigateurs testés :** Chromium, Mobile Chrome (Pixel 5)" >> $GITHUB_STEP_SUMMARY
           echo "**Specs couvertes :** auth · checkout · admin · wishlist" >> $GITHUB_STEP_SUMMARY
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 5 — k6 Smoke Test  (main branch uniquement — non bloquant)
+  # ──────────────────────────────────────────────────────────────────────────
+  k6-smoke:
+    name: k6 — Smoke Test
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    # Tourne uniquement sur main pour ne pas ralentir les PRs.
+    # continue-on-error : un échec k6 est signalé mais ne bloque pas le merge.
+    if: github.ref == 'refs/heads/main'
+    continue-on-error: true
+    services:
+      mongodb:
+        image: mongo:7
+        ports: ["27017:27017"]
+        options: >-
+          --health-cmd "mongosh --eval \"db.adminCommand('ping')\""
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Build server
+        working-directory: server
+        run: npm run build
+
+      # Start API in background
+      - name: Start API server
+        working-directory: server
+        env:
+          NODE_ENV: test
+          PORT: 5000
+          MONGODB_URI: mongodb://localhost:27017/sunushop_test
+          REDIS_URL: redis://localhost:6379
+          JWT_ACCESS_SECRET: test-access-secret-at-least-32-chars
+          JWT_REFRESH_SECRET: test-refresh-secret-at-least-32-chars
+          CLIENT_URL: http://localhost:5173
+        run: node dist/server.js &
+
+      - name: Wait for API to be ready
+        run: |
+          for i in {1..15}; do
+            curl -sf http://localhost:5000/health && echo "API ready" && break
+            echo "Waiting for API... ($i/15)"
+            sleep 2
+          done
+
+      - name: Install k6
+        run: |
+          curl -s https://dl.k6.io/key.gpg | sudo apt-key add -
+          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update -qq && sudo apt-get install -y k6
+
+      - name: Run k6 smoke test
+        env:
+          BASE_URL: http://localhost:5000/api/v1
+        run: k6 run --out json=k6-results.json k6/smoke.js
+
+      - name: Upload k6 results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-smoke-results
+          path: k6-results.json
+          retention-days: 7
+
+      - name: k6 → Step Summary
+        if: always()
+        run: |
+          echo "## ⚡ k6 Smoke Test" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Smoke test passé — API répond correctement sous charge minimale." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Smoke test échoué ou dégradé — vérifiez les seuils dans k6/smoke.js." >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Seuil | Valeur cible |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|:------------:|" >> $GITHUB_STEP_SUMMARY
+          echo "| p95 latency | < 500ms |" >> $GITHUB_STEP_SUMMARY
+          echo "| Error rate  | < 1%    |" >> $GITHUB_STEP_SUMMARY
+          echo "| VUs         | 1       |" >> $GITHUB_STEP_SUMMARY
+          echo "| Duration    | 30s     |" >> $GITHUB_STEP_SUMMARY

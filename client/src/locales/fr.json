@@ -69,7 +69,16 @@
     "selectOption": "Sélectionner une option",
     "noData": "Aucune donnée disponible",
     "retry": "Réessayer",
-    "refresh": "Actualiser"
+    "refresh": "Actualiser",
+    "myOrders": "Mes commandes",
+    "createAccount": "Créer un compte",
+    "administration": "Administration",
+    "openCart": "Ouvrir le panier",
+    "myFavorites": "Mes favoris",
+    "switchToEnglish": "Switch to English",
+    "switchToFrench": "Passer en Français",
+    "closeAnnouncement": "Fermer l'annonce",
+    "searchProducts": "Rechercher un produit..."
   },
 
   "nav": {
@@ -88,7 +97,10 @@
     "trackOrder": "Suivi de commande",
     "blog": "Blog",
     "deals": "Bons plans",
-    "newArrivals": "Nouveautés"
+    "newArrivals": "Nouveautés",
+    "allCategories": "Toutes les catégories",
+    "promotions": "Promos",
+    "repairServices": "Services Réparation"
   },
 
   "home": {
