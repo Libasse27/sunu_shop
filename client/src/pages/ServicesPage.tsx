@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { MessageCircle, Phone, CheckCircle, Clock, ArrowRight, Wrench, Shield, Star, ChevronRight } from 'lucide-react';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import api from '../services/api';
-import { SITE_NAME, WHATSAPP_NUMBER } from '../utils/constants';
+import { SITE_NAME, SITE_URL, WHATSAPP_NUMBER } from '../utils/constants';
 import { formatPrice } from '../utils/formatPrice';
 
 interface Service {
@@ -24,18 +25,15 @@ interface Service {
 }
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('Tous');
 
-  useEffect(() => {
-    api.get('/services')
-      .then(r => setServices(r.data.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: services = [], isLoading } = useQuery({
+    queryKey: ['services'],
+    queryFn: () => api.get('/services').then(r => r.data.data as Service[]),
+    staleTime: 10 * 60 * 1000,
+  });
 
-  if (loading) return <LoadingSpinner fullScreen />;
+  if (isLoading) return <LoadingSpinner fullScreen />;
 
   const categories = ['Tous', ...Array.from(new Set(services.map(s => s.category)))];
   const filtered = activeCategory === 'Tous' ? services : services.filter(s => s.category === activeCategory);
@@ -45,7 +43,44 @@ export default function ServicesPage() {
       <Helmet>
         <title>Services Réparation & Installation — {SITE_NAME}</title>
         <meta name="description" content="Services de réparation d'ordinateurs et téléphones, installation caméras, réseau Wi-Fi et maintenance informatique par des techniciens certifiés." />
+        <link rel="canonical" href={`${SITE_URL}/services`} />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${SITE_URL}/` },
+            { '@type': 'ListItem', position: 2, name: 'Services Techniques', item: `${SITE_URL}/services` },
+          ],
+        })}</script>
       </Helmet>
+
+      {services.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: `Services Réparation & Installation — ${SITE_NAME}`,
+            itemListElement: services.filter(s => s.isAvailable).map((service, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              item: {
+                '@type': 'Service',
+                name: service.title,
+                description: service.shortDescription,
+                url: `${SITE_URL}/services/${service.slug}`,
+                provider: { '@type': 'LocalBusiness', name: SITE_NAME },
+                offers: {
+                  '@type': 'Offer',
+                  priceCurrency: 'XOF',
+                  price: service.startingPrice,
+                  availability: 'https://schema.org/InStock',
+                },
+              },
+            })),
+          })}}
+        />
+      )}
 
       {/* ── Breadcrumb ── */}
       <div className="bg-gray-50 border-b">

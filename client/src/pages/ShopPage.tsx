@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -72,6 +72,10 @@ export default function ShopPage() {
   const total = productsData?.pagination.total ?? 0;
   const totalPages = productsData?.pagination.totalPages ?? 1;
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
+
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
@@ -110,6 +114,21 @@ export default function ShopPage() {
         <meta name="twitter:card"  content="summary" />
         <meta name="twitter:site"  content="@sunushop" />
         <meta name="twitter:title" content={currentCategory?.name ? `${currentCategory.name} — Sunu Shop` : 'Boutique Tech — Sunu Shop'} />
+
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${SITE_URL}/` },
+            { '@type': 'ListItem', position: 2, name: 'Boutique', item: `${SITE_URL}/boutique` },
+            ...(currentCategory ? [{
+              '@type': 'ListItem',
+              position: 3,
+              name: currentCategory.name,
+              item: `${SITE_URL}/boutique/${currentCategory.slug}`,
+            }] : []),
+          ],
+        })}</script>
       </Helmet>
 
       {/* Hero sénégalais */}
@@ -121,7 +140,8 @@ export default function ShopPage() {
         </div>
         <div className="container-custom relative z-10">
           <nav className="text-sm mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            <span>Accueil</span> / <span style={{ color: 'rgba(255,255,255,0.9)' }}>{currentCategory?.name || 'Boutique'}</span>
+            <Link to="/" className="no-underline transition-opacity hover:opacity-80" style={{ color: 'rgba(255,255,255,0.5)' }}>Accueil</Link>
+            {' '}/ <span style={{ color: 'rgba(255,255,255,0.9)' }}>{currentCategory?.name || 'Boutique'}</span>
           </nav>
           <h1 className="font-bold text-2xl text-white mb-0">
             {search ? `Résultats pour « ${search} »` : currentCategory?.name || 'Boutique'}
@@ -274,24 +294,34 @@ export default function ShopPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center gap-2 mt-10">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                      <motion.button
-                        key={p}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setPage(p)}
-                        className={`rounded-lg text-sm font-medium border-0 transition-colors ${
-                          p === page ? 'text-white' : 'bg-white text-gray-500 border border-gray-200'
-                        }`}
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          ...(p === page ? { backgroundColor: '#009A44' } : {}),
-                        }}
-                      >
-                        {p}
-                      </motion.button>
-                    ))}
+                  <div className="flex justify-center items-center gap-1.5 mt-10 flex-wrap">
+                    {paginationPages(page, totalPages).map((p, idx) =>
+                      p === '...' ? (
+                        <span
+                          key={`ellipsis-${idx}`}
+                          className="flex items-center justify-center text-gray-400 text-sm select-none"
+                          style={{ width: '40px', height: '40px' }}
+                        >
+                          …
+                        </span>
+                      ) : (
+                        <motion.button
+                          key={p}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setPage(p as number)}
+                          className={`rounded-lg text-sm font-medium border-0 transition-colors ${
+                            p === page ? 'text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
+                          }`}
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            ...(p === page ? { backgroundColor: '#009A44' } : {}),
+                          }}
+                        >
+                          {p}
+                        </motion.button>
+                      )
+                    )}
                   </div>
                 )}
               </>
@@ -301,6 +331,19 @@ export default function ShopPage() {
       </div>
     </>
   );
+}
+
+function paginationPages(current: number, total: number): (number | '...')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const delta = 2;
+  const pages: (number | '...')[] = [1];
+  if (current - delta > 2) pages.push('...');
+  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    pages.push(i);
+  }
+  if (current + delta < total - 1) pages.push('...');
+  pages.push(total);
+  return pages;
 }
 
 /* Extracted filter content for reuse in desktop sidebar and mobile drawer */
@@ -329,20 +372,20 @@ function FiltersContent({
         <ul className="list-none p-0 flex flex-col gap-2 mb-0">
           {categories.map(cat => (
             <li key={cat._id}>
-              <a
-                href={`/boutique/${cat.slug}`}
-                className={`block text-sm py-1 no-underline transition-colors ${categorySlug === cat.slug ? 'font-semibold' : 'text-gray-500'}`}
+              <Link
+                to={`/boutique/${cat.slug}`}
+                className={`block text-sm py-1 no-underline transition-colors ${categorySlug === cat.slug ? 'font-semibold' : 'text-gray-500 hover:text-gray-800'}`}
                 style={categorySlug === cat.slug ? { color: '#009A44' } : {}}
               >
                 {cat.icon} {cat.name}
-              </a>
+              </Link>
               {cat.children && cat.children.length > 0 && (
                 <ul className="list-none ml-4 mt-1 flex flex-col gap-1 mb-0 p-0">
                   {cat.children.map(child => (
                     <li key={child._id}>
-                      <a href={`/boutique/${child.slug}`} className="text-sm text-gray-500 no-underline">
+                      <Link to={`/boutique/${child.slug}`} className="text-sm text-gray-500 no-underline hover:text-gray-800">
                         {child.name}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>

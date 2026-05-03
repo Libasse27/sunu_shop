@@ -1,18 +1,51 @@
 import api from './api';
 
 // ─── Analytics ────────────────────────────────────────────────────────────────
+
+// Convertit un nombre de jours vers l'enum period attendu par le serveur.
+// getSalesData accepte aussi 'quarter' (90 jours), getRevenueByCategory non.
+function daysToPeriod(days: number, allowQuarter = true): string {
+  if (days <= 7)  return 'week';
+  if (days <= 31) return 'month';
+  if (allowQuarter && days <= 92) return 'quarter';
+  return 'year';
+}
+
 export const analyticsApi = {
-  getDashboardStats: () => api.get('/analytics/dashboard'),
-  getSalesData: (days = 30) => api.get(`/analytics/sales?days=${days}`),
-  getTopProducts: () => api.get('/analytics/products/top'),
-  getLowStockProducts: () => api.get('/analytics/products/low-stock'),
-  getOrderStatusDistribution: () => api.get('/analytics/orders/status'),
-  getPaymentMethodDistribution: () => api.get('/analytics/payments/methods'),
-  getRecentActivity: () => api.get('/analytics/recent-activity'),
-  getRevenueSummary: () => api.get('/analytics/revenue-summary'),
-  getRevenueByCategory: (days = 30) => api.get(`/analytics/revenue-by-category?days=${days}`),
-  getTopCustomers: () => api.get('/analytics/customers/top'),
-  getRevenueBreakdown: () => api.get('/analytics/revenue-breakdown'),
+  getDashboardStats: () =>
+    api.get('/analytics/dashboard'),
+
+  // days : 7 | 30 | 90 — converti en period enum (week/month/quarter/year)
+  getSalesData: (days = 30) =>
+    api.get('/analytics/sales', { params: { period: daysToPeriod(days), groupBy: 'day' } }),
+
+  getTopProducts: (limit = 10, sortBy = 'revenue', period = 'month') =>
+    api.get('/analytics/products/top', { params: { limit, sortBy, period } }),
+
+  getLowStockProducts: (limit = 20) =>
+    api.get('/analytics/products/low-stock', { params: { limit } }),
+
+  getOrderStatusDistribution: (period = 'month') =>
+    api.get('/analytics/orders/status', { params: { period } }),
+
+  getPaymentMethodDistribution: (period = 'month') =>
+    api.get('/analytics/payments/methods', { params: { period } }),
+
+  getRecentActivity: (limit = 10) =>
+    api.get('/analytics/recent-activity', { params: { limit } }),
+
+  getRevenueSummary: () =>
+    api.get('/analytics/revenue-summary'),
+
+  // days : 7 | 30 | 90 — converti en period enum (week/month/year, pas de quarter)
+  getRevenueByCategory: (days = 30) =>
+    api.get('/analytics/revenue-by-category', { params: { period: daysToPeriod(days, false) } }),
+
+  getTopCustomers: (limit = 10, period = 'year') =>
+    api.get('/analytics/customers/top', { params: { limit, period } }),
+
+  getRevenueBreakdown: () =>
+    api.get('/analytics/revenue-breakdown'),
 };
 
 // ─── Products ─────────────────────────────────────────────────────────────────

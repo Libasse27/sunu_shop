@@ -15,10 +15,10 @@ export default defineConfig({
       reportsDirectory: './coverage',
       // Seuils bloquants CI — les modules critiques doivent atteindre 80%
       thresholds: {
-        lines:      70,
-        branches:   65,
-        functions:  70,
-        statements: 70,
+        lines:      75,
+        branches:   70,
+        functions:  75,
+        statements: 75,
       },
       include: [
         'src/features/**/*.ts',

@@ -1,7 +1,8 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from './store/store';
+import { useSelector } from 'react-redux';
+import { RootState, useAppDispatch } from './store/store';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import { syncWishlist } from './features/wishlist/wishlistSlice';
 import { restoreSession } from './features/auth/authSlice';
 import Header from './components/common/Header';
@@ -57,7 +58,7 @@ const AdminRevenuePage = lazy(() => import('./pages/admin/AdminRevenuePage'));
 function App() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
   // Initialisé avec la valeur courante pour que le watcher ne se déclenche pas au montage
   const prevUserRef = useRef<typeof user>(user);
@@ -85,6 +86,7 @@ function App() {
   }, [user, dispatch]);
 
   return (
+    <ErrorBoundary>
     <div className="min-h-screen flex flex-col bg-gray-50">
       <PWAUpdatePrompt />
       {!isAdmin && <Header />}
@@ -153,6 +155,7 @@ function App() {
       {!isAdmin && <CartDrawer />}
       {!isAdmin && <Footer />}
     </div>
+    </ErrorBoundary>
   );
 }
 

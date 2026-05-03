@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Heart, ShoppingCart, User, Menu, X, ChevronDown, LogOut, Globe, Wrench, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Menu as HMenu, Transition, Popover } from '@headlessui/react';
+import { Menu as HMenu, Transition } from '@headlessui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Fragment } from 'react';
 import { RootState, useAppDispatch } from '../../store/store';
@@ -426,53 +426,51 @@ export default function Header() {
         <div className="container-custom">
           <div className="flex items-center">
 
-            {/* All categories — Headless UI Popover */}
-            <Popover className="relative shrink-0">
-              {({ open }) => (
-                <>
-                  <Popover.Button
-                    className="flex items-center gap-2 text-white border-0 px-4 py-3 text-sm font-semibold transition-colors focus:outline-none"
-                    style={{ backgroundColor: '#009A44' }}
-                    onMouseEnter={() => setCategoriesOpen(true)}
-                    onMouseLeave={() => setCategoriesOpen(false)}
-                  >
-                    <Menu size={16} />
-                    Toutes les catégories
-                    <ChevronDown size={13} className={`transition-transform duration-200 ${open || categoriesOpen ? 'rotate-180' : ''}`} />
-                  </Popover.Button>
+            {/* All categories — hover dropdown */}
+            <div
+              className="relative shrink-0"
+              onMouseEnter={() => setCategoriesOpen(true)}
+              onMouseLeave={() => setCategoriesOpen(false)}
+            >
+              <button
+                type="button"
+                className="flex items-center gap-2 text-white border-0 px-4 py-3 text-sm font-semibold focus:outline-none"
+                style={{ backgroundColor: '#009A44' }}
+                onClick={() => setCategoriesOpen(v => !v)}
+              >
+                <Menu size={16} />
+                Toutes les catégories
+                <ChevronDown size={13} className={`transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
+              </button>
 
-                  <Transition
-                    show={open || categoriesOpen}
-                    as={Fragment}
-                    enter="transition ease-out duration-150"
-                    enterFrom="opacity-0 translate-y-1"
-                    enterTo="opacity-100 translate-y-0"
-                    leave="transition ease-in duration-100"
-                    leaveFrom="opacity-100 translate-y-0"
-                    leaveTo="opacity-0 translate-y-1"
-                  >
-                    <Popover.Panel
-                      static
-                      className="absolute bg-white text-gray-900 shadow-lg border rounded-b-xl z-50 py-1"
-                      style={{ top: '100%', left: 0, width: '15rem' }}
-                      onMouseEnter={() => setCategoriesOpen(true)}
-                      onMouseLeave={() => setCategoriesOpen(false)}
+              <Transition
+                show={categoriesOpen}
+                as={Fragment}
+                enter="transition ease-out duration-150"
+                enterFrom="opacity-0 translate-y-1"
+                enterTo="opacity-100 translate-y-0"
+                leave="transition ease-in duration-100"
+                leaveFrom="opacity-100 translate-y-0"
+                leaveTo="opacity-0 translate-y-1"
+              >
+                <div
+                  className="absolute bg-white text-gray-900 shadow-lg border rounded-b-xl z-50 py-1"
+                  style={{ top: '100%', left: 0, width: '15rem' }}
+                >
+                  {CATEGORIES_NAV.map((cat) => (
+                    <Link
+                      key={cat.slug}
+                      to={`/boutique/${cat.slug}`}
+                      className="flex items-center gap-3 px-4 py-2 text-sm font-medium no-underline text-gray-800 border-b border-gray-100 transition-colors hover:bg-gray-50"
+                      onClick={() => setCategoriesOpen(false)}
                     >
-                      {CATEGORIES_NAV.map((cat) => (
-                        <Link
-                          key={cat.slug}
-                          to={`/boutique/${cat.slug}`}
-                          className="flex items-center gap-3 px-4 py-2 text-sm font-medium no-underline text-gray-800 border-b border-gray-100 transition-colors hover:bg-gray-50"
-                        >
-                          <span className="text-base">{cat.icon}</span>
-                          {cat.name}
-                        </Link>
-                      ))}
-                    </Popover.Panel>
-                  </Transition>
-                </>
-              )}
-            </Popover>
+                      <span className="text-base">{cat.icon}</span>
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </Transition>
+            </div>
 
             {/* Nav links */}
             <div className="flex items-center">

@@ -57,7 +57,7 @@ app.use(helmet({
       styleSrc:                ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc:                 ["'self'", 'https://fonts.gstatic.com'],
       imgSrc:                  ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com'],
-      connectSrc:              ["'self'", 'wss:', 'https://api.stripe.com', 'https://api.wave.com'],
+      connectSrc:              ["'self'", 'ws://localhost:*', 'wss://localhost:*', 'https://api.stripe.com', 'https://api.wave.com'],
       frameSrc:                ['https://js.stripe.com'],
       objectSrc:               ["'none'"],
       upgradeInsecureRequests: [],
@@ -179,6 +179,28 @@ app.use('/api/v1/announcements', announcementRoutes);
 app.use('/api/v1/newsletter', newsletterRoutes);
 app.use('/api/v1/payment-settings', paymentSettingsRoutes);
 app.use('/api/v1/contact', contactRoutes);
+
+// CSP violation reports — content-type: application/csp-report (not application/json)
+// Needs its own body parser; global express.json() skips non-JSON content-types
+const CSP_NOISE_PREFIXES = ['chrome-extension://', 'moz-extension://', 'safari-extension://', 'about:', 'data:'];
+
+app.post('/api/v1/csp-report',
+  express.json({ type: ['application/json', 'application/csp-report'], limit: '2kb' }),
+  (req: Request, res: Response) => {
+    const r = req.body?.['csp-report'] ?? req.body;
+    const blocked = r?.['blocked-uri'] as string | undefined;
+
+    if (blocked && !CSP_NOISE_PREFIXES.some(p => blocked.startsWith(p))) {
+      const severity = blocked.startsWith('https://') ? 'warn' : 'error';
+      console[severity]('[CSP] blocked=%s directive=%s source-file=%s document=%s',
+        blocked,
+        r['violated-directive'],
+        r['source-file'] ?? '',
+        r['document-uri']);
+    }
+    res.status(204).end();
+  }
+);
 
 // SEO — sitemap et robots.txt (servis à la racine, pas sous /api)
 app.use('/', sitemapRoutes);
