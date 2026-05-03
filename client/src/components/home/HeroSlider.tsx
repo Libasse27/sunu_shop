@@ -20,6 +20,7 @@ interface Props {
 
 export default function HeroSlider({ banners, currentSlide, onSlideChange }: Props) {
   const slide = banners[currentSlide] ?? banners[0];
+  if (!slide) return null;
 
   return (
     <section className="bg-gray-100 border-b">
@@ -113,11 +114,19 @@ export default function HeroSlider({ banners, currentSlide, onSlideChange }: Pro
 
               <div className="flex flex-wrap items-center gap-3">
                 <motion.div whileTap={{ scale: 0.97 }}>
-                  <Link to={slide.link}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm no-underline shadow-lg transition-opacity hover:opacity-90"
-                    style={{ backgroundColor: '#FCD116', color: '#003D1C', boxShadow: '0 6px 20px rgba(252,209,22,0.4)' }}>
-                    {slide.cta} <ArrowRight size={14} />
-                  </Link>
+                  {slide.link?.startsWith('http') ? (
+                    <a href={slide.link} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm no-underline shadow-lg transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: '#FCD116', color: '#003D1C', boxShadow: '0 6px 20px rgba(252,209,22,0.4)' }}>
+                      {slide.cta} <ArrowRight size={14} />
+                    </a>
+                  ) : (
+                    <Link to={slide.link || '/boutique'}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm no-underline shadow-lg transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: '#FCD116', color: '#003D1C', boxShadow: '0 6px 20px rgba(252,209,22,0.4)' }}>
+                      {slide.cta} <ArrowRight size={14} />
+                    </Link>
+                  )}
                 </motion.div>
                 <motion.a whileTap={{ scale: 0.97 }}
                   href={`https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}`}

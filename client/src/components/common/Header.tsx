@@ -35,6 +35,7 @@ const DEFAULT_ANNOUNCEMENT: Announcement = {
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const catCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([DEFAULT_ANNOUNCEMENT]);
   const [annIdx, setAnnIdx] = useState(0);
   const [annVisible, setAnnVisible] = useState(true);
@@ -429,8 +430,13 @@ export default function Header() {
             {/* All categories — hover dropdown */}
             <div
               className="relative shrink-0"
-              onMouseEnter={() => setCategoriesOpen(true)}
-              onMouseLeave={() => setCategoriesOpen(false)}
+              onMouseEnter={() => {
+                if (catCloseTimer.current) clearTimeout(catCloseTimer.current);
+                setCategoriesOpen(true);
+              }}
+              onMouseLeave={() => {
+                catCloseTimer.current = setTimeout(() => setCategoriesOpen(false), 150);
+              }}
             >
               <button
                 type="button"

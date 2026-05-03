@@ -35,12 +35,12 @@ export default function ShopPage() {
   const inStock = searchParams.get('inStock') || '';
 
   // Catégories cachées 10 min — changent rarement, pas besoin de refetch à chaque page
-  const { data: categoriesData, isFetched: categoriesFetched } = useQuery({
+  const { data: categoriesData, isSuccess: categoriesReady } = useQuery({
     queryKey: ['categories'],
     queryFn: ({ signal }) =>
       api.get('/categories', { signal }).then(r => r.data.data as Category[]),
     staleTime: 10 * 60 * 1000,
-    initialData: [] as Category[],
+    placeholderData: [] as Category[],
   });
   const categories = categoriesData ?? [];
 
@@ -48,7 +48,7 @@ export default function ShopPage() {
   const categoryId = categories.find(c => c.slug === categorySlug)?._id;
 
   // N'envoie la requête produits que si les catégories sont prêtes quand un slug est demandé
-  const filtersReady = !categorySlug || categoriesFetched;
+  const filtersReady = !categorySlug || categoriesReady;
 
   const { data: productsData, isLoading, isFetching } = useQuery({
     queryKey: ['products', { page, sort, search, categoryId, minPrice, maxPrice, onSale, inStock }],
@@ -72,9 +72,14 @@ export default function ShopPage() {
   const total = productsData?.pagination.total ?? 0;
   const totalPages = productsData?.pagination.totalPages ?? 1;
 
+  // Reset page to 1 whenever the category slug changes (navigating between categories)
+  useEffect(() => {
+    setPage(1);
+  }, [categorySlug]);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [page]);
+  }, [page, categorySlug]);
 
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -268,7 +273,7 @@ export default function ShopPage() {
 
           {/* Products Grid */}
           <div className="flex-1 min-w-0">
-            {isLoading ? (
+            {(isLoading || !filtersReady) ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                 {Array.from({ length: 12 }).map((_, i) => (
                   <ProductCardSkeleton key={i} />
