@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag, Eye } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -23,6 +24,7 @@ function getKeySpec(specs: { key: string; value: string }[], keys: string[]): st
 }
 
 export default function ProductCard({ product }: Props) {
+  const [imgLoaded, setImgLoaded] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const wishlist = useSelector((state: RootState) => state.wishlist.items);
@@ -67,16 +69,34 @@ export default function ProductCard({ product }: Props) {
         to={`/produit/${product.slug}`}
         className="product-card group"
       >
-        {/* Image */}
+        {/* Image — LQIP blur-up + srcSet responsive */}
         <div className="relative aspect-square overflow-hidden bg-gray-50">
+          {/* LQIP placeholder (20×20 blurred) */}
+          <img
+            src={CLD.lqip(primaryImage?.url)}
+            aria-hidden="true"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              filter: 'blur(6px)',
+              transform: 'scale(1.05)',
+              opacity: imgLoaded ? 0 : 1,
+              transition: 'opacity 0.4s ease',
+            }}
+          />
+          {/* Main image — responsive srcSet */}
           <img
             src={CLD.card(primaryImage?.url)}
+            srcSet={CLD.srcSet(primaryImage?.url)}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            style={{ opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.4s ease, transform 0.5s ease' }}
             loading="lazy"
             width={400}
             height={400}
             decoding="async"
+            onLoad={() => setImgLoaded(true)}
           />
 
           {/* Badges */}

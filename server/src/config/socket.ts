@@ -8,12 +8,15 @@ import type { IOrder } from '../models/Order.model';
 
 // Payload minimal pour les événements socket (subset sérialisable)
 interface NotificationPayload {
-  _id?: string;
-  type: string;
-  title: string;
-  message: string;
-  data?: Record<string, unknown>;
+  _id?:      string;
+  id?:       string | null;
+  type:      string;
+  title:     string;
+  message:   string;
+  link?:     string;
+  data?:     Record<string, unknown>;
   createdAt?: Date;
+  timestamp?: string;
 }
 
 let io: Server | null = null;

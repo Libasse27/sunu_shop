@@ -39,14 +39,15 @@ router.get('/sitemap.xml', async (_req: Request, res: Response) => {
       Service.find({ isAvailable: true }, 'slug updatedAt').lean<Array<{ slug: string; updatedAt: Date }>>(),
     ]);
 
+    const now = new Date().toISOString();
     const links: any[] = [
       // Pages statiques
-      { url: '/',                   priority: 1.0, changefreq: 'daily' },
-      { url: '/boutique',           priority: 0.9, changefreq: 'daily' },
-      { url: '/services',           priority: 0.8, changefreq: 'weekly' },
-      { url: '/a-propos',           priority: 0.5, changefreq: 'monthly' },
-      { url: '/contact',            priority: 0.5, changefreq: 'monthly' },
-      { url: '/faq',                priority: 0.5, changefreq: 'monthly' },
+      { url: '/',          priority: 1.0, changefreq: 'daily',   lastmod: now },
+      { url: '/boutique',  priority: 0.9, changefreq: 'daily',   lastmod: now },
+      { url: '/services',  priority: 0.8, changefreq: 'weekly',  lastmod: now },
+      { url: '/a-propos',  priority: 0.5, changefreq: 'monthly', lastmod: now },
+      { url: '/contact',   priority: 0.5, changefreq: 'monthly', lastmod: now },
+      { url: '/faq',       priority: 0.5, changefreq: 'monthly', lastmod: now },
 
       // Catégories
       ...categories.map(cat => ({

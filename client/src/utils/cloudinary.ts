@@ -26,4 +26,11 @@ export const CLD = {
   admin:    (url: string | undefined | null) => cloudinaryUrl(url, 'w_80,h_80,c_fill,f_auto,q_70'),
   /** Category image */
   category: (url: string | undefined | null) => cloudinaryUrl(url, 'w_300,h_200,c_fill,f_auto,q_auto'),
+  /** LQIP — 20×20 ultra-blurred placeholder for blur-up progressive loading */
+  lqip:     (url: string | undefined | null) => cloudinaryUrl(url, 'w_20,h_20,c_fill,f_auto,q_1,e_blur:500'),
+  /** srcSet — 200w / 400w / 800w responsive variants for <img srcset> */
+  srcSet:   (url: string | undefined | null) =>
+    [200, 400, 800]
+      .map(w => `${cloudinaryUrl(url, `w_${w},h_${w},c_fill,f_auto,q_auto`)} ${w}w`)
+      .join(', '),
 };

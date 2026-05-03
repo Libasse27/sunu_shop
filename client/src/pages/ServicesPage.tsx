@@ -52,6 +52,37 @@ export default function ServicesPage() {
             { '@type': 'ListItem', position: 2, name: 'Services Techniques', item: `${SITE_URL}/services` },
           ],
         })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'Combien coûte une réparation de téléphone à Dakar ?',
+              acceptedAnswer: { '@type': 'Answer', text: `Les réparations de téléphone démarrent à 15 000 FCFA selon la panne et le modèle. Contactez ${SITE_NAME} via WhatsApp pour un devis gratuit et rapide.` },
+            },
+            {
+              '@type': 'Question',
+              name: 'Combien de temps dure une réparation d\'ordinateur ?',
+              acceptedAnswer: { '@type': 'Answer', text: 'La plupart des réparations d\'ordinateurs sont effectuées en 24 à 48 heures. Pour les pannes complexes, un délai de 3 à 5 jours peut être nécessaire. Un service express est disponible.' },
+            },
+            {
+              '@type': 'Question',
+              name: 'Proposez-vous une garantie sur les réparations ?',
+              acceptedAnswer: { '@type': 'Answer', text: 'Oui, toutes nos réparations sont garanties de 3 à 6 mois selon le type d\'intervention. Les pièces de remplacement sont également couvertes par cette garantie.' },
+            },
+            {
+              '@type': 'Question',
+              name: 'Installez-vous des caméras de surveillance à Dakar ?',
+              acceptedAnswer: { '@type': 'Answer', text: 'Oui, nous installons des systèmes de vidéosurveillance complets (caméras IP, NVR, DVR) à Dakar et en banlieue. Devis gratuit sur site disponible.' },
+            },
+            {
+              '@type': 'Question',
+              name: 'Pouvez-vous installer un réseau Wi-Fi pour mon entreprise ?',
+              acceptedAnswer: { '@type': 'Answer', text: 'Nos techniciens certifiés installent et configurent des réseaux Wi-Fi professionnels pour entreprises, boutiques et domiciles au Sénégal. Contactez-nous via WhatsApp pour un devis.' },
+            },
+          ],
+        })}</script>
       </Helmet>
 
       {services.length > 0 && (

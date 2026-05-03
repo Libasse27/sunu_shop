@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import App from './App';
 import { store } from './store/store';
+import { reportWebVitals } from './utils/reportWebVitals';
 import './i18n';
 import './index.css';
 
@@ -25,6 +26,8 @@ const queryClient = new QueryClient({
     mutations: { retry: 1 },
   },
 });
+
+reportWebVitals();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

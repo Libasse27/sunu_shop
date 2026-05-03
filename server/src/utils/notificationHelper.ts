@@ -21,8 +21,9 @@ export const createNotification = async (params: CreateNotificationParams): Prom
       data: params.data,
     });
 
-    // Emit via Socket.io to the user in real-time
-    emitNotificationToUser(params.userId.toString(), notification.toObject());
+    // Emit via Socket.io — sérialiser _id (ObjectId → string) pour le payload socket
+    const obj = notification.toObject();
+    emitNotificationToUser(params.userId.toString(), { ...obj, _id: obj._id.toString() });
   } catch (error) {
     logger.error('Erreur création notification', { error });
   }
