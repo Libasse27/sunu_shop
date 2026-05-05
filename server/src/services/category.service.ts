@@ -8,7 +8,6 @@
  *   - Génération de slug unique
  */
 
-import mongoose from 'mongoose';
 import Category, { ICategory } from '../models/Category.model';
 import Product from '../models/Product.model';
 import { ApiError } from '../utils/ApiError';

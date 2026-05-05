@@ -1,11 +1,9 @@
 import request from 'supertest';
-import crypto from 'crypto';
 import app from '../../app';
 import User from '../../models/User.model';
 import Order from '../../models/Order.model';
 import Category from '../../models/Category.model';
 import Product from '../../models/Product.model';
-import { env } from '../../config/env';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

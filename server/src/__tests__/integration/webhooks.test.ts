@@ -172,7 +172,7 @@ describe('POST /api/v1/payments/stripe/webhook', () => {
     });
 
     it('retourne 200 et reçoit l\'événement avec la bonne signature', async () => {
-      const clientToken = await registerAndLogin(`wh-user-${Date.now()}@test.sn`);
+      const _clientToken = await registerAndLogin(`wh-user-${Date.now()}@test.sn`);
       const user = await User.findOne({ email: { $regex: /wh-user/ } });
       const { payment } = await createOrderAndPayment(user!._id.toString());
 

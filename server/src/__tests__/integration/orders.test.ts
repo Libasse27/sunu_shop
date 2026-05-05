@@ -3,7 +3,6 @@ import app from '../../app';
 import User from '../../models/User.model';
 import Product from '../../models/Product.model';
 import Category from '../../models/Category.model';
-import Order from '../../models/Order.model';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

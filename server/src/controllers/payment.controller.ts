@@ -23,7 +23,7 @@ if (stripeKeyValid) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const StripeClass = require('stripe');
     stripe = new StripeClass(env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }) as Stripe;
-  } catch (error) {
+  } catch (_error) {
     logger.warn('Stripe : package non installé. Lancer : npm install stripe');
   }
 } else if (env.STRIPE_SECRET_KEY) {

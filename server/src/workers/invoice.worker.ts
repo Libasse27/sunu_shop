@@ -18,7 +18,7 @@ const invoiceWorker = new Worker<InvoiceJobData>(
   'invoices',
 
   async (job: Job<InvoiceJobData>) => {
-    const { orderId, userId, email, orderNumber } = job.data;
+    const { orderId, userId: _userId, email, orderNumber } = job.data;
 
     // Lazy import pour éviter les dépendances circulaires
     const Order = (await import('../models/Order.model')).default;

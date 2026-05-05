@@ -92,7 +92,7 @@ describe('CouponService.validateCoupon', () => {
   });
 
   it('est insensible à la casse du code', async () => {
-    const c = await makeCoupon({ code: 'UPPER10' });
+    const _c = await makeCoupon({ code: 'UPPER10' });
     const result = await couponService.validateCoupon('upper10', USER_A, 50_000);
     expect(result.valid).toBe(true);
   });

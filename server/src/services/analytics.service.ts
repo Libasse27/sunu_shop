@@ -17,7 +17,6 @@
 import Order from '../models/Order.model';
 import User from '../models/User.model';
 import Product from '../models/Product.model';
-import mongoose from 'mongoose';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -151,7 +150,6 @@ export class AnalyticsService {
    * @param days - Nombre de jours (7, 14, 30, 90)
    */
   async getSalesData(days: number): Promise<SalesData> {
-    const endDate   = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
