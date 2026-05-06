@@ -53,6 +53,15 @@ vi.mock('../../components/payment/OrangeMoneyLogo', () => ({
 
 // ── Données de test ──────────────────────────────────────────────────────────
 
+const mockUser = {
+  id: 'user-001',
+  firstName: 'Fatou',
+  lastName: 'Sow',
+  email: 'fatou@test.sn',
+  role: 'client' as const,
+  isVerified: true,
+};
+
 const cartItems: CartItem[] = [
   {
     _id: 'prod-laptop-001',
@@ -75,6 +84,7 @@ const cartItems: CartItem[] = [
 ];
 
 const initialCartState = {
+  auth: { user: mockUser, isLoading: false, error: null },
   cart: {
     items: cartItems,
     coupon: null,
@@ -377,7 +387,10 @@ describe('CheckoutPage', () => {
         quantity: 1,
       };
       renderWithProviders(<CheckoutPage />, {
-        initialState: { cart: { items: [cheapItem], coupon: null, drawerOpen: false } },
+        initialState: {
+          auth: { user: mockUser, isLoading: false, error: null },
+          cart: { items: [cheapItem], coupon: null, drawerOpen: false },
+        },
       });
       // SHIPPING_COST = 3 000 FCFA — toLocaleString('fr-FR') produit "3 000" avec espace insécable
       // On utilise une regex flexible pour matcher le séparateur quel qu'il soit
@@ -387,6 +400,7 @@ describe('CheckoutPage', () => {
     it('affiche la remise du coupon dans le récapitulatif', () => {
       renderWithProviders(<CheckoutPage />, {
         initialState: {
+          auth: { user: mockUser, isLoading: false, error: null },
           cart: {
             items: cartItems,
             coupon: { code: 'SUNU10', discount: 10000, type: 'fixed' },
